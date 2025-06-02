@@ -4,221 +4,259 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Cours collectifs</h1>
-        <p class="text-gray-600 mt-2">
-          Découvrez nos cours en petits groupes (max 5 personnes) adaptés à votre niveau
-        </p>
+        <p class="text-gray-600 mt-2">Sessions en petits groupes (5 personnes maximum)</p>
       </div>
 
       <!-- Filters -->
-      <div class="mb-8 flex flex-wrap gap-4">
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-medium text-gray-700">Niveau :</label>
-          <select v-model="selectedLevel" class="input-field py-2 px-3 text-sm">
+      <div class="bg-white rounded-xl shadow-sm p-4 mb-6">
+        <div class="flex flex-col sm:flex-row gap-4">
+          <select 
+            v-model="filters.level"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
             <option value="">Tous les niveaux</option>
             <option value="A1">A1 - Débutant</option>
             <option value="A2">A2 - Élémentaire</option>
             <option value="B1">B1 - Intermédiaire</option>
-            <option value="B2">B2 - Intermédiaire supérieur</option>
+            <option value="B2">B2 - Intermédiaire avancé</option>
             <option value="C1">C1 - Avancé</option>
           </select>
-        </div>
-        
-        <div class="flex items-center space-x-2">
-          <label class="text-sm font-medium text-gray-700">Catégorie :</label>
-          <select v-model="selectedCategory" class="input-field py-2 px-3 text-sm">
+          
+          <select 
+            v-model="filters.category"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
             <option value="">Toutes les catégories</option>
-            <option value="grammar">Grammaire</option>
-            <option value="communication">Communication</option>
-            <option value="business">Business</option>
+            <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+              {{ cat.icon }} {{ cat.name }}
+            </option>
           </select>
+          
+          <input 
+            v-model="filters.search"
+            type="text"
+            placeholder="Rechercher..."
+            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
         </div>
       </div>
 
-      <!-- Course Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <!-- Sessions Grid -->
+      <div v-if="filteredSessions.length === 0" class="text-center py-12">
+        <BookOpenIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune session disponible</h3>
+        <p class="text-gray-600">Revenez plus tard pour découvrir de nouvelles sessions</p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <div 
-          v-for="course in filteredCourses" 
-          :key="course.id"
-          class="card p-6 cursor-pointer"
-          @click="showCourseDetails(course)"
+          v-for="session in filteredSessions" 
+          :key="session.id"
+          class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
         >
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-semibold text-gray-900">{{ course.name }}</h3>
-            <span class="level-badge">{{ course.level }}</span>
-          </div>
+          <!-- Category Banner -->
+          <div 
+            class="h-2 rounded-t-xl"
+            :style="{ backgroundColor: getCategoryColor(session.categoryId) }"
+          ></div>
           
-          <p class="text-gray-600 mb-4">{{ course.description }}</p>
-          
-          <div class="space-y-2 mb-4">
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">⏱️</span>
-              {{ course.duration }}
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-2xl">{{ getCategoryIcon(session.categoryId) }}</span>
+              <span class="px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium">
+                {{ session.level }}
+              </span>
             </div>
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">👥</span>
-              {{ course.maxStudents }} personnes max
-            </div>
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">🪙</span>
-              {{ course.price }} token
-            </div>
-          </div>
-
-          <!-- Next sessions preview -->
-          <div v-if="course.sessions && course.sessions.length > 0" class="mb-4">
-            <h4 class="text-sm font-medium text-gray-700 mb-2">Prochaines séances :</h4>
-            <div class="space-y-1">
-              <div 
-                v-for="session in course.sessions.slice(0, 2)" 
-                :key="session.id"
-                class="text-xs text-gray-600"
-              >
-                {{ formatSessionDate(session.dateTime) }} - {{ session.teacher }}
-                <span class="text-primary-600">({{ 5 - session.enrolled }} places)</span>
+            
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ session.name }}</h3>
+            
+            <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+              {{ session.content?.description || 'Session de cours collectif' }}
+            </p>
+            
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center text-sm text-gray-600">
+                <CalendarIcon class="w-4 h-4 mr-2" />
+                {{ formatDate(session.dateTime) }}
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <UserIcon class="w-4 h-4 mr-2" />
+                {{ session.teacher }}
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <ClockIcon class="w-4 h-4 mr-2" />
+                {{ session.duration }} minutes
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <UserGroupIcon class="w-4 h-4 mr-2" />
+                {{ session.enrolled?.length || 0 }}/{{ session.maxStudents }} participants
               </div>
             </div>
-          </div>
-
-          <button class="w-full btn-primary py-2">
-            Voir les détails
-          </button>
-        </div>
-      </div>
-
-      <!-- Empty state -->
-      <div v-if="filteredCourses.length === 0" class="text-center py-12">
-        <div class="text-6xl mb-4">📚</div>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun cours trouvé</h3>
-        <p class="text-gray-600">Essayez de modifier vos filtres ou revenez plus tard.</p>
-      </div>
-    </div>
-
-    <!-- Course Detail Modal -->
-    <div v-if="selectedCourse" class="modal-overlay" @click.self="selectedCourse = null">
-      <div class="modal-content max-w-4xl">
-        <div class="flex justify-between items-start mb-6">
-          <div>
-            <h2 class="text-2xl font-bold text-gray-900">{{ selectedCourse.name }}</h2>
-            <div class="flex items-center space-x-4 mt-2">
-              <span class="level-badge">{{ selectedCourse.level }}</span>
-              <span class="text-sm text-gray-600">{{ selectedCourse.duration }}</span>
-              <span class="text-sm text-gray-600">{{ selectedCourse.price }} token</span>
+            
+            <!-- Progress bar -->
+            <div class="mb-4">
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  class="bg-primary-500 h-2 rounded-full transition-all"
+                  :style="{ width: ((session.enrolled?.length || 0) / session.maxStudents * 100) + '%' }"
+                ></div>
+              </div>
             </div>
-          </div>
-          <button @click="selectedCourse = null" class="text-gray-400 hover:text-gray-600">
-            ✕
-          </button>
-        </div>
-
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold mb-2">Description</h3>
-          <p class="text-gray-600">{{ selectedCourse.fullDescription }}</p>
-        </div>
-
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold mb-2">Ce que vous apprendrez</h3>
-          <ul class="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <li 
-              v-for="objective in selectedCourse.learningObjectives" 
-              :key="objective"
-              class="flex items-center text-sm text-gray-600"
-            >
-              <span class="text-green-500 mr-2">✓</span>
-              {{ objective }}
-            </li>
-          </ul>
-        </div>
-
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold mb-4">Séances disponibles</h3>
-          <div class="space-y-3">
-            <div 
-              v-for="session in selectedCourse.sessions" 
-              :key="session.id"
-              class="border border-gray-200 rounded-lg p-4 hover:border-primary-500 transition-colors"
-            >
-              <div class="flex justify-between items-center">
-                <div>
-                  <p class="font-medium">{{ formatSessionDate(session.dateTime) }}</p>
-                  <p class="text-sm text-gray-600">{{ session.teacher }}</p>
-                  <p class="text-sm text-gray-500">{{ session.topic }}</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm text-gray-500 mb-2">
-                    {{ 5 - session.enrolled }}/5 places disponibles
-                  </p>
-                  <button 
-                    @click="bookSession(session.id)"
-                    :disabled="session.enrolled >= 5"
-                    class="btn-primary px-4 py-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {{ session.enrolled >= 5 ? 'Complet' : 'Réserver' }}
-                  </button>
-                </div>
+            
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-900">1 token</span>
+              <div class="space-x-2">
+                <router-link 
+                  :to="`/courses/${session.id}`"
+                  class="px-3 py-1 text-primary-600 hover:text-primary-800 text-sm"
+                >
+                  Détails
+                </router-link>
+                <button 
+                  v-if="canBook(session)"
+                  @click="bookSession(session)"
+                  class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+                >
+                  Réserver
+                </button>
+                <span 
+                  v-else-if="isEnrolled(session)"
+                  class="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm"
+                >
+                  ✓ Inscrit
+                </span>
+                <span 
+                  v-else
+                  class="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm"
+                >
+                  Complet
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Notification Toast -->
+    <NotificationToast 
+      v-if="notification"
+      :message="notification.message"
+      :type="notification.type"
+      @close="notification = null"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useCoursesStore } from '@/stores/courses'
 import { useAuthStore } from '@/stores/auth'
+import { useCoursesStore } from '@/stores/courses'
+import { useAdminStore } from '@/stores/admin'
+import { 
+  BookOpen as BookOpenIcon,
+  Calendar as CalendarIcon,
+  User as UserIcon,
+  Clock as ClockIcon,
+  Users as UserGroupIcon
+} from 'lucide-vue-next'
+import NotificationToast from '@/components/ui/NotificationToast.vue'
 
-const coursesStore = useCoursesStore()
 const authStore = useAuthStore()
+const coursesStore = useCoursesStore()
+const adminStore = useAdminStore()
 
-const selectedLevel = ref('')
-const selectedCategory = ref('')
-const selectedCourse = ref(null)
-
-const filteredCourses = computed(() => {
-  let courses = coursesStore.availableCourses
-
-  if (selectedLevel.value) {
-    courses = courses.filter(course => 
-      course.levels.includes(selectedLevel.value) || course.level === selectedLevel.value
-    )
-  }
-
-  if (selectedCategory.value) {
-    courses = courses.filter(course => course.category === selectedCategory.value)
-  }
-
-  return courses
+const notification = ref(null)
+const filters = ref({
+  level: '',
+  category: '',
+  search: ''
 })
 
-const showCourseDetails = (course) => {
-  selectedCourse.value = course
-}
+// Computed
+const categories = computed(() => adminStore.categories)
 
-const formatSessionDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('fr-FR', {
-    weekday: 'short',
-    month: 'short',
+const filteredSessions = computed(() => {
+  let sessions = coursesStore.sessionsByType.course || []
+  
+  if (filters.value.level) {
+    sessions = sessions.filter(s => s.level === filters.value.level)
+  }
+  
+  if (filters.value.category) {
+    sessions = sessions.filter(s => s.categoryId === parseInt(filters.value.category))
+  }
+  
+  if (filters.value.search) {
+    const search = filters.value.search.toLowerCase()
+    sessions = sessions.filter(s => 
+      s.name.toLowerCase().includes(search) ||
+      s.content?.description?.toLowerCase().includes(search) ||
+      s.teacher?.toLowerCase().includes(search)
+    )
+  }
+  
+  return sessions
+})
+
+// Lifecycle
+onMounted(async () => {
+  await coursesStore.loadCoursesData()
+})
+
+// Methods
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
     day: 'numeric',
+    month: 'short',
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
-const bookSession = async (sessionId) => {
-  try {
-    await coursesStore.bookSession(sessionId, 'course')
-    selectedCourse.value = null
-    // Show success notification
-    alert('Séance réservée avec succès !')
-  } catch (error) {
-    alert(error.message)
-  }
+const getCategoryById = (categoryId) => {
+  return adminStore.categories.find(c => c.id === categoryId)
 }
 
-onMounted(() => {
-  console.log('Page cours chargée')
-})
-</script> 
+const getCategoryIcon = (categoryId) => {
+  return getCategoryById(categoryId)?.icon || '📚'
+}
+
+const getCategoryColor = (categoryId) => {
+  return getCategoryById(categoryId)?.color || '#3B82F6'
+}
+
+const canBook = (session) => {
+  return authStore.user?.tokens > 0 && 
+    (session.enrolled?.length || 0) < session.maxStudents &&
+    !isEnrolled(session)
+}
+
+const isEnrolled = (session) => {
+  return session.enrolled?.includes(authStore.user?.id)
+}
+
+const bookSession = async (session) => {
+  try {
+    await coursesStore.bookSession(session.id)
+    notification.value = {
+      type: 'success',
+      message: `Vous êtes inscrit à la session "${session.name}"`
+    }
+  } catch (error) {
+    notification.value = {
+      type: 'error',
+      message: error.message
+    }
+  }
+}
+</script>
+
+<style scoped>
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+</style> 

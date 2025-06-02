@@ -10,13 +10,19 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },
-  "keywords": ["vue", "vite", "education", "english", "learning"],
+  "keywords": [
+    "vue",
+    "vite",
+    "education",
+    "english",
+    "learning"
+  ],
   "author": "ELC Academy",
   "license": "MIT",
   "dependencies": {
-    "@heroicons/vue": "^2.0.18",
     "axios": "^1.6.2",
     "chart.js": "^4.4.0",
+    "lucide-vue-next": "^0.511.0",
     "pinia": "^2.1.7",
     "vue": "^3.3.8",
     "vue-router": "^4.2.5"

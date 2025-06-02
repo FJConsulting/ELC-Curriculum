@@ -4,134 +4,228 @@
       <!-- Header -->
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">Club de conversation</h1>
-        <p class="text-gray-600 mt-2">
-          Débattez de l'actualité en anglais et améliorez votre expression orale
-        </p>
+        <p class="text-gray-600 mt-2">Pratiquez votre anglais en discutant de l'actualité et de la culture</p>
       </div>
 
-      <!-- Club Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- Info Banner -->
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div class="flex">
+          <InformationCircleIcon class="h-5 w-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
+          <div>
+            <h3 class="text-sm font-medium text-blue-900">Comment ça marche ?</h3>
+            <p class="text-sm text-blue-700 mt-1">
+              Chaque session aborde un thème d'actualité différent. Des ressources sont fournies à l'avance 
+              pour vous préparer. Les discussions sont modérées par un professeur natif.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sessions Grid -->
+      <div v-if="conversationSessions.length === 0" class="text-center py-12">
+        <ChatBubbleLeftRightIcon class="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune session disponible</h3>
+        <p class="text-gray-600">Revenez plus tard pour découvrir de nouvelles sessions de conversation</p>
+      </div>
+
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div 
-          v-for="club in conversationClubs" 
-          :key="club.id"
-          class="card p-6"
+          v-for="session in conversationSessions" 
+          :key="session.id"
+          class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
         >
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-semibold text-gray-900">{{ club.name }}</h3>
-            <span class="level-badge">{{ club.level }}</span>
-          </div>
-          
-          <p class="text-gray-600 mb-4">{{ club.description }}</p>
-          
-          <div class="space-y-2 mb-4">
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">⏱️</span>
-              {{ club.duration }}
+          <div class="p-6">
+            <div class="flex items-start justify-between mb-3">
+              <span class="text-2xl">💬</span>
+              <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">
+                {{ session.level }}
+              </span>
             </div>
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">👥</span>
-              {{ club.maxStudents }} personnes max
-            </div>
-            <div class="flex items-center text-sm text-gray-500">
-              <span class="mr-2">🪙</span>
-              {{ club.price }} token
-            </div>
-          </div>
+            
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ session.name }}</h3>
+            
+            <p class="text-gray-600 text-sm mb-4">
+              {{ session.content?.description || 'Session de conversation thématique' }}
+            </p>
 
-          <!-- Sessions -->
-          <div class="mb-4">
-            <h4 class="text-sm font-semibold text-gray-700 mb-3">Prochaines sessions :</h4>
-            <div class="space-y-3">
-              <div 
-                v-for="session in club.sessions" 
-                :key="session.id"
-                class="border border-gray-200 rounded-lg p-3"
-              >
-                <div class="flex justify-between items-start mb-2">
-                  <div>
-                    <p class="font-medium text-sm">{{ session.topic }}</p>
-                    <p class="text-xs text-gray-600">{{ formatDate(session.dateTime) }}</p>
-                    <p class="text-xs text-gray-500">{{ session.teacher }}</p>
-                  </div>
-                  <span class="text-xs text-primary-600">
-                    {{ 5 - session.enrolled }} places
-                  </span>
-                </div>
-                
-                <!-- Preparation materials -->
-                <div v-if="session.preparationMaterials" class="mb-2">
-                  <p class="text-xs font-medium text-gray-700 mb-1">Préparation :</p>
-                  <ul class="text-xs text-gray-600 space-y-1">
-                    <li v-for="material in session.preparationMaterials" :key="material">
-                      📖 {{ material }}
-                    </li>
-                  </ul>
-                </div>
+            <!-- Thème principal -->
+            <div v-if="session.content?.objectives?.length" class="mb-4 p-3 bg-gray-50 rounded-lg">
+              <h4 class="text-sm font-medium text-gray-700 mb-1">Thèmes abordés :</h4>
+              <p class="text-sm text-gray-600">{{ session.content.objectives[0] }}</p>
+            </div>
+            
+            <div class="space-y-2 mb-4 border-t pt-4">
+              <div class="flex items-center text-sm text-gray-600">
+                <CalendarIcon class="w-4 h-4 mr-2" />
+                {{ formatDate(session.dateTime) }}
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <UserIcon class="w-4 h-4 mr-2" />
+                Modéré par {{ session.teacher }}
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <ClockIcon class="w-4 h-4 mr-2" />
+                {{ session.duration }} minutes
+              </div>
+              <div class="flex items-center text-sm text-gray-600">
+                <UserGroupIcon class="w-4 h-4 mr-2" />
+                {{ session.enrolled?.length || 0 }}/{{ session.maxStudents }} participants
+              </div>
+            </div>
 
-                <button 
-                  @click="bookSession(session.id)"
-                  :disabled="session.enrolled >= 5"
-                  class="w-full btn-primary py-2 text-sm disabled:opacity-50"
+            <!-- Resources preview -->
+            <div v-if="isEnrolled(session) && getSessionResources(session.id).length > 0" class="mb-4 p-3 bg-green-50 rounded-lg">
+              <p class="text-xs text-green-700 font-medium">
+                📎 {{ getSessionResources(session.id).length }} ressources disponibles
+              </p>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-medium text-gray-900">1 token</span>
+              <div class="space-x-2">
+                <router-link 
+                  :to="`/courses/${session.id}`"
+                  class="px-3 py-1 text-primary-600 hover:text-primary-800 text-sm"
                 >
-                  {{ session.enrolled >= 5 ? 'Complet' : 'Rejoindre' }}
+                  Détails
+                </router-link>
+                <button 
+                  v-if="canBook(session)"
+                  @click="bookSession(session)"
+                  class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors text-sm"
+                >
+                  Réserver
                 </button>
+                <span 
+                  v-else-if="isEnrolled(session)"
+                  class="px-4 py-2 bg-green-100 text-green-700 rounded-lg text-sm"
+                >
+                  ✓ Inscrit
+                </span>
+                <span 
+                  v-else
+                  class="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm"
+                >
+                  Complet
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Topics overview -->
-      <div class="mt-12">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6">Sujets abordés</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div 
-            v-for="topic in allTopics" 
-            :key="topic"
-            class="bg-white rounded-lg p-4 text-center border border-gray-200 hover:border-primary-500 transition-colors"
-          >
-            <div class="text-2xl mb-2">💬</div>
-            <p class="text-sm font-medium text-gray-700">{{ topic }}</p>
+      <!-- Tips Section -->
+      <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg p-6 text-center">
+          <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span class="text-xl">📖</span>
           </div>
+          <h3 class="font-semibold mb-2">Préparez-vous</h3>
+          <p class="text-sm text-gray-600">
+            Consultez les ressources avant la session pour enrichir la discussion
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-lg p-6 text-center">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span class="text-xl">🗣️</span>
+          </div>
+          <h3 class="font-semibold mb-2">Participez activement</h3>
+          <p class="text-sm text-gray-600">
+            N'ayez pas peur de faire des erreurs, l'important est de pratiquer
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-lg p-6 text-center">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <span class="text-xl">🌍</span>
+          </div>
+          <h3 class="font-semibold mb-2">Échangez les cultures</h3>
+          <p class="text-sm text-gray-600">
+            Partagez vos perspectives et découvrez celles des autres participants
+          </p>
         </div>
       </div>
     </div>
+
+    <!-- Notification Toast -->
+    <NotificationToast 
+      v-if="notification"
+      :message="notification.message"
+      :type="notification.type"
+      @close="notification = null"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import { useCoursesStore } from '@/stores/courses'
+import { useAdminStore } from '@/stores/admin'
+import { 
+  Info as InformationCircleIcon,
+  MessageSquare as ChatBubbleLeftRightIcon,
+  Calendar as CalendarIcon,
+  User as UserIcon,
+  Clock as ClockIcon,
+  Users as UserGroupIcon
+} from 'lucide-vue-next'
+import NotificationToast from '@/components/ui/NotificationToast.vue'
 
+const authStore = useAuthStore()
 const coursesStore = useCoursesStore()
+const adminStore = useAdminStore()
 
-const conversationClubs = computed(() => coursesStore.conversationClubs)
+const notification = ref(null)
 
-const allTopics = computed(() => {
-  const topics = new Set()
-  conversationClubs.value.forEach(club => {
-    club.topics?.forEach(topic => topics.add(topic))
-  })
-  return Array.from(topics)
+// Computed
+const conversationSessions = computed(() => {
+  return coursesStore.sessionsByType.conversation || []
 })
 
+// Lifecycle
+onMounted(async () => {
+  await coursesStore.loadCoursesData()
+})
+
+// Methods
 const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('fr-FR', {
+  return new Date(dateString).toLocaleDateString('fr-FR', {
     weekday: 'long',
-    month: 'long',
     day: 'numeric',
+    month: 'long',
     hour: '2-digit',
     minute: '2-digit'
   })
 }
 
-const bookSession = async (sessionId) => {
+const canBook = (session) => {
+  return authStore.user?.tokens > 0 && 
+    (session.enrolled?.length || 0) < session.maxStudents &&
+    !isEnrolled(session)
+}
+
+const isEnrolled = (session) => {
+  return session.enrolled?.includes(authStore.user?.id)
+}
+
+const getSessionResources = (sessionId) => {
+  return adminStore.resources.filter(r => r.sessionId === sessionId)
+}
+
+const bookSession = async (session) => {
   try {
-    await coursesStore.bookSession(sessionId, 'conversation')
-    alert('Session réservée avec succès !')
+    await coursesStore.bookSession(session.id)
+    notification.value = {
+      type: 'success',
+      message: `Vous êtes inscrit à la session "${session.name}"`
+    }
   } catch (error) {
-    alert(error.message)
+    notification.value = {
+      type: 'error',
+      message: error.message
+    }
   }
 }
 </script> 

@@ -8,7 +8,7 @@
           @click="$emit('close')"
           class="text-gray-400 hover:text-gray-600 text-2xl"
         >
-          ✕
+          <XMarkIcon class="h-6 w-6" />
         </button>
       </div>
 
@@ -101,6 +101,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { X as XMarkIcon, Check as CheckIcon } from 'lucide-vue-next'
 
 const props = defineProps({
   show: {

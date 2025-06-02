@@ -59,45 +59,45 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/cours',
+    path: '/courses',
     name: 'Courses',
     component: Courses,
     meta: { requiresAuth: true }
   },
   {
-    path: '/cours/:id',
+    path: '/courses/:id',
     name: 'CourseDetail',
     component: CourseDetail,
     meta: { requiresAuth: true },
     props: true
   },
   {
-    path: '/lecon/:courseId/:lessonId',
+    path: '/lesson/:courseId/:lessonId',
     name: 'LessonView',
     component: LessonView,
     meta: { requiresAuth: true },
     props: true
   },
   {
-    path: '/club-conversation',
+    path: '/conversation-club',
     name: 'ConversationClub',
     component: ConversationClub,
     meta: { requiresAuth: true }
   },
   {
-    path: '/ateliers-grammaire',
+    path: '/grammar-workshops',
     name: 'GrammarWorkshops',
     component: GrammarWorkshops,
     meta: { requiresAuth: true }
   },
   {
-    path: '/profil',
+    path: '/profile',
     name: 'Profile',
     component: Profile,
     meta: { requiresAuth: true }
   },
   {
-    path: '/abonnement',
+    path: '/subscription',
     name: 'Subscription',
     component: Subscription,
     meta: { requiresAuth: true }

@@ -6,6 +6,11 @@ export const useAdminStore = defineStore('admin', () => {
   const users = ref([])
   const sessions = ref([])
   const transactions = ref([])
+  const categories = ref([])
+  const resources = ref([])
+  const teachers = ref([])
+  const templates = ref([])
+  const notifications = ref([])
   const stats = ref({
     activeStudents: 0,
     monthlyRevenue: 0,
@@ -46,23 +51,31 @@ export const useAdminStore = defineStore('admin', () => {
     sessions.value.filter(s => new Date(s.dateTime) > new Date()).sort((a, b) => new Date(a.dateTime) - new Date(b.dateTime))
   )
 
+  const resourcesBySession = computed(() => {
+    const grouped = {}
+    resources.value.forEach(resource => {
+      if (!grouped[resource.sessionId]) {
+        grouped[resource.sessionId] = []
+      }
+      grouped[resource.sessionId].push(resource)
+    })
+    return grouped
+  })
+
   // Actions
   const loadAdminData = async () => {
     loading.value = true
     try {
-      // Simuler le chargement des données
       await new Promise(resolve => setTimeout(resolve, 500))
       
-      // Charger les utilisateurs
       users.value = generateMockUsers()
-      
-      // Charger les sessions
       sessions.value = generateMockSessions()
-      
-      // Charger les transactions
       transactions.value = generateMockTransactions()
+      categories.value = generateMockCategories()
+      resources.value = generateMockResources()
+      teachers.value = generateMockTeachers()
+      templates.value = generateMockTemplates()
       
-      // Calculer les statistiques
       updateStats()
     } finally {
       loading.value = false
@@ -89,6 +102,236 @@ export const useAdminStore = defineStore('admin', () => {
   const calculateAverageRating = () => {
     const ratings = sessions.value.filter(s => s.rating).map(s => s.rating)
     return ratings.length > 0 ? (ratings.reduce((sum, r) => sum + r, 0) / ratings.length).toFixed(1) : 0
+  }
+
+  // Gestion des catégories
+  const createCategory = (categoryData) => {
+    const newCategory = {
+      id: Date.now(),
+      ...categoryData,
+      createdAt: new Date().toISOString()
+    }
+    categories.value.push(newCategory)
+    return newCategory
+  }
+
+  const updateCategory = (categoryId, updates) => {
+    const index = categories.value.findIndex(c => c.id === categoryId)
+    if (index !== -1) {
+      categories.value[index] = { ...categories.value[index], ...updates }
+      return true
+    }
+    return false
+  }
+
+  const deleteCategory = (categoryId) => {
+    const index = categories.value.findIndex(c => c.id === categoryId)
+    if (index !== -1) {
+      categories.value.splice(index, 1)
+      return true
+    }
+    return false
+  }
+
+  // Gestion des ressources pédagogiques
+  const uploadResource = (resourceData) => {
+    const newResource = {
+      id: Date.now(),
+      ...resourceData,
+      uploadedAt: new Date().toISOString(),
+      size: resourceData.size || Math.floor(Math.random() * 10000) + 1000,
+      downloads: 0
+    }
+    resources.value.push(newResource)
+    return newResource
+  }
+
+  const deleteResource = (resourceId) => {
+    const index = resources.value.findIndex(r => r.id === resourceId)
+    if (index !== -1) {
+      resources.value.splice(index, 1)
+      return true
+    }
+    return false
+  }
+
+  const getResourcesByType = (type) => {
+    return resources.value.filter(r => r.type === type)
+  }
+
+  // Gestion avancée des sessions
+  const createSessionWithContent = (sessionData) => {
+    const newSession = {
+      id: Date.now(),
+      ...sessionData,
+      status: 'scheduled',
+      createdAt: new Date().toISOString(),
+      enrolled: [],
+      content: {
+        objectives: sessionData.objectives || [],
+        description: sessionData.description || '',
+        prerequisites: sessionData.prerequisites || [],
+        outline: sessionData.outline || []
+      },
+      resources: [],
+      meetingLink: sessionData.meetingLink || ''
+    }
+    sessions.value.push(newSession)
+    return newSession
+  }
+
+  const updateSessionContent = (sessionId, content) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (session) {
+      session.content = { ...session.content, ...content }
+      return true
+    }
+    return false
+  }
+
+  const updateSessionMeetingLink = (sessionId, meetingLink) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (session) {
+      session.meetingLink = meetingLink
+      return true
+    }
+    return false
+  }
+
+  const addResourceToSession = (sessionId, resourceId) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    const resource = resources.value.find(r => r.id === resourceId)
+    
+    if (session && resource) {
+      if (!session.resources) session.resources = []
+      session.resources.push(resourceId)
+      resource.sessionId = sessionId
+      return true
+    }
+    return false
+  }
+
+  const removeResourceFromSession = (sessionId, resourceId) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    if (session && session.resources) {
+      const index = session.resources.indexOf(resourceId)
+      if (index !== -1) {
+        session.resources.splice(index, 1)
+        const resource = resources.value.find(r => r.id === resourceId)
+        if (resource) resource.sessionId = null
+        return true
+      }
+    }
+    return false
+  }
+
+  const duplicateSession = (sessionId) => {
+    const original = sessions.value.find(s => s.id === sessionId)
+    if (original) {
+      const duplicate = {
+        ...original,
+        id: Date.now(),
+        name: `${original.name} (Copie)`,
+        status: 'draft',
+        enrolled: [],
+        createdAt: new Date().toISOString()
+      }
+      sessions.value.push(duplicate)
+      return duplicate
+    }
+    return null
+  }
+
+  // Gestion des professeurs
+  const createTeacher = (teacherData) => {
+    const newTeacher = {
+      id: Date.now(),
+      ...teacherData,
+      createdAt: new Date().toISOString(),
+      sessions: []
+    }
+    teachers.value.push(newTeacher)
+    return newTeacher
+  }
+
+  const updateTeacher = (teacherId, updates) => {
+    const index = teachers.value.findIndex(t => t.id === teacherId)
+    if (index !== -1) {
+      teachers.value[index] = { ...teachers.value[index], ...updates }
+      return true
+    }
+    return false
+  }
+
+  const getTeacherStats = (teacherId) => {
+    const teacherSessions = sessions.value.filter(s => s.teacherId === teacherId)
+    return {
+      totalSessions: teacherSessions.length,
+      completedSessions: teacherSessions.filter(s => s.status === 'completed').length,
+      averageRating: calculateTeacherRating(teacherId),
+      totalStudents: teacherSessions.reduce((sum, s) => sum + s.enrolled.length, 0)
+    }
+  }
+
+  const calculateTeacherRating = (teacherId) => {
+    const teacherSessions = sessions.value.filter(s => s.teacherId === teacherId && s.rating)
+    if (teacherSessions.length === 0) return 0
+    const totalRating = teacherSessions.reduce((sum, s) => sum + s.rating, 0)
+    return (totalRating / teacherSessions.length).toFixed(1)
+  }
+
+  // Gestion des templates
+  const createTemplate = (templateData) => {
+    const newTemplate = {
+      id: Date.now(),
+      ...templateData,
+      createdAt: new Date().toISOString()
+    }
+    templates.value.push(newTemplate)
+    return newTemplate
+  }
+
+  const applyTemplate = (sessionId, templateId) => {
+    const session = sessions.value.find(s => s.id === sessionId)
+    const template = templates.value.find(t => t.id === templateId)
+    
+    if (session && template) {
+      session.content = { ...template.content }
+      session.duration = template.duration
+      session.maxStudents = template.maxStudents
+      return true
+    }
+    return false
+  }
+
+  // Système de notifications
+  const sendNotification = (notificationData) => {
+    const newNotification = {
+      id: Date.now(),
+      ...notificationData,
+      sentAt: new Date().toISOString(),
+      read: false
+    }
+    notifications.value.push(newNotification)
+    
+    // Simuler l'envoi aux utilisateurs concernés
+    if (notificationData.recipients === 'all') {
+      users.value.forEach(user => {
+        console.log(`Notification envoyée à ${user.email}: ${notificationData.message}`)
+      })
+    } else if (notificationData.sessionId) {
+      const session = sessions.value.find(s => s.id === notificationData.sessionId)
+      if (session) {
+        session.enrolled.forEach(userId => {
+          const user = users.value.find(u => u.id === userId)
+          if (user) {
+            console.log(`Notification envoyée à ${user.email}: ${notificationData.message}`)
+          }
+        })
+      }
+    }
+    
+    return newNotification
   }
 
   // Gestion des utilisateurs
@@ -149,6 +392,30 @@ export const useAdminStore = defineStore('admin', () => {
     return false
   }
 
+  const deleteSession = (sessionId) => {
+    const index = sessions.value.findIndex(s => s.id === sessionId)
+    if (index !== -1) {
+      // Rembourser les tokens si la session était planifiée
+      const session = sessions.value[index]
+      if (session.status === 'scheduled' && session.enrolled.length > 0) {
+        session.enrolled.forEach(userId => {
+          addTokensToUser(userId, 1)
+        })
+      }
+      
+      // Supprimer les ressources associées
+      resources.value.forEach(resource => {
+        if (resource.sessionId === sessionId) {
+          resource.sessionId = null
+        }
+      })
+      
+      sessions.value.splice(index, 1)
+      return true
+    }
+    return false
+  }
+
   const cancelSession = (sessionId, reason) => {
     const session = sessions.value.find(s => s.id === sessionId)
     if (session) {
@@ -159,6 +426,15 @@ export const useAdminStore = defineStore('admin', () => {
       // Rembourser les tokens aux étudiants
       session.enrolled.forEach(userId => {
         addTokensToUser(userId, 1)
+      })
+      
+      // Envoyer une notification
+      sendNotification({
+        type: 'session_cancelled',
+        sessionId,
+        title: 'Session annulée',
+        message: `La session "${session.name}" a été annulée. Raison: ${reason}`,
+        recipients: 'session'
       })
       
       return true
@@ -217,6 +493,10 @@ export const useAdminStore = defineStore('admin', () => {
     return sessions.value.filter(s => s.teacherId === teacherId)
   }
 
+  const getSessionsByCategory = (categoryId) => {
+    return sessions.value.filter(s => s.categoryId === categoryId)
+  }
+
   const getSessionsByDate = (date) => {
     const targetDate = new Date(date).toDateString()
     return sessions.value.filter(s => 
@@ -254,7 +534,6 @@ export const useAdminStore = defineStore('admin', () => {
 
   const generateMockSessions = () => {
     const types = ['course', 'grammar', 'conversation']
-    const teachers = ['Sarah Johnson', 'Mike Wilson', 'Emma Davis', 'David Brown']
     const statuses = ['scheduled', 'completed', 'cancelled']
     
     return Array.from({ length: 100 }, (_, i) => {
@@ -263,19 +542,196 @@ export const useAdminStore = defineStore('admin', () => {
       
       return {
         id: i + 1,
+        categoryId: Math.floor(Math.random() * 5) + 1,
         type: types[Math.floor(Math.random() * types.length)],
         name: `Session ${i + 1}`,
-        teacher: teachers[Math.floor(Math.random() * teachers.length)],
-        teacherId: Math.floor(Math.random() * teachers.length) + 1,
+        teacherId: Math.floor(Math.random() * 4) + 1,
+        teacher: ['Sarah Johnson', 'Mike Wilson', 'Emma Davis', 'David Brown'][Math.floor(Math.random() * 4)],
         dateTime: date.toISOString(),
         duration: 60,
         maxStudents: 5,
         enrolled: Array.from({ length: Math.floor(Math.random() * 6) }, () => Math.floor(Math.random() * 50) + 1),
         status,
         rating: status === 'completed' ? Math.floor(Math.random() * 2) + 3.5 : null,
-        level: ['A1', 'A2', 'B1', 'B2'][Math.floor(Math.random() * 4)]
+        level: ['A1', 'A2', 'B1', 'B2'][Math.floor(Math.random() * 4)],
+        content: {
+          objectives: ['Objectif 1', 'Objectif 2', 'Objectif 3'],
+          description: 'Description détaillée de la session',
+          prerequisites: ['Prérequis 1', 'Prérequis 2'],
+          outline: ['Introduction', 'Partie principale', 'Exercices', 'Conclusion']
+        },
+        resources: [],
+        meetingLink: status === 'scheduled' && Math.random() > 0.5 
+          ? `https://meet.elc-academy.com/session-${i + 1}` 
+          : ''
       }
     })
+  }
+
+  const generateMockCategories = () => {
+    return [
+      {
+        id: 1,
+        name: 'Grammaire fondamentale',
+        description: 'Bases grammaticales essentielles',
+        color: '#3B82F6',
+        icon: '📝'
+      },
+      {
+        id: 2,
+        name: 'Communication orale',
+        description: 'Pratique de l\'expression orale',
+        color: '#10B981',
+        icon: '💬'
+      },
+      {
+        id: 3,
+        name: 'Business English',
+        description: 'Anglais professionnel',
+        color: '#8B5CF6',
+        icon: '💼'
+      },
+      {
+        id: 4,
+        name: 'Culture et actualité',
+        description: 'Découverte culturelle',
+        color: '#F59E0B',
+        icon: '🌍'
+      },
+      {
+        id: 5,
+        name: 'Préparation examens',
+        description: 'TOEIC, TOEFL, Cambridge',
+        color: '#EF4444',
+        icon: '🎓'
+      }
+    ]
+  }
+
+  const generateMockResources = () => {
+    const types = ['pdf', 'video', 'audio', 'image', 'document', 'presentation']
+    const names = [
+      'Grammar Guide Chapter 1.pdf',
+      'Pronunciation Exercise.mp3',
+      'Business Vocabulary.pptx',
+      'Conversation Practice Video.mp4',
+      'Reading Comprehension Text.docx',
+      'Listening Exercise Audio.wav'
+    ]
+    
+    return Array.from({ length: 50 }, (_, i) => ({
+      id: i + 1,
+      name: names[i % names.length],
+      type: types[Math.floor(Math.random() * types.length)],
+      sessionId: Math.random() > 0.3 ? Math.floor(Math.random() * 100) + 1 : null,
+      size: Math.floor(Math.random() * 50000) + 1000,
+      uploadedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      uploadedBy: 'Admin',
+      downloads: Math.floor(Math.random() * 100),
+      url: `/resources/${i + 1}`
+    }))
+  }
+
+  const generateMockTeachers = () => {
+    return [
+      {
+        id: 1,
+        name: 'Sarah Johnson',
+        email: 'sarah.johnson@elc.com',
+        specialities: ['Grammar', 'Business English'],
+        languages: ['English', 'French'],
+        experience: '10 years',
+        bio: 'Experienced ESL teacher specializing in business English',
+        availability: ['Monday', 'Wednesday', 'Friday'],
+        rating: 4.8
+      },
+      {
+        id: 2,
+        name: 'Mike Wilson',
+        email: 'mike.wilson@elc.com',
+        specialities: ['Conversation', 'Culture'],
+        languages: ['English', 'Spanish'],
+        experience: '7 years',
+        bio: 'Native speaker focused on conversational skills',
+        availability: ['Tuesday', 'Thursday', 'Saturday'],
+        rating: 4.6
+      },
+      {
+        id: 3,
+        name: 'Emma Davis',
+        email: 'emma.davis@elc.com',
+        specialities: ['Grammar', 'Exam Preparation'],
+        languages: ['English', 'German'],
+        experience: '5 years',
+        bio: 'Specialist in exam preparation (TOEIC, TOEFL)',
+        availability: ['Monday', 'Tuesday', 'Thursday'],
+        rating: 4.9
+      },
+      {
+        id: 4,
+        name: 'David Brown',
+        email: 'david.brown@elc.com',
+        specialities: ['Business English', 'Writing'],
+        languages: ['English', 'French', 'Italian'],
+        experience: '12 years',
+        bio: 'Business communication expert',
+        availability: ['Wednesday', 'Friday', 'Saturday'],
+        rating: 4.7
+      }
+    ]
+  }
+
+  const generateMockTemplates = () => {
+    return [
+      {
+        id: 1,
+        name: 'Template Grammaire Débutant',
+        category: 'grammar',
+        level: 'A1',
+        duration: 60,
+        maxStudents: 5,
+        content: {
+          objectives: [
+            'Comprendre la structure de base',
+            'Utiliser correctement les temps',
+            'Construire des phrases simples'
+          ],
+          description: 'Session de grammaire pour débutants',
+          prerequisites: ['Aucun'],
+          outline: [
+            'Révision des acquis (10 min)',
+            'Introduction du nouveau concept (15 min)',
+            'Exemples et démonstration (15 min)',
+            'Exercices pratiques (15 min)',
+            'Questions et résumé (5 min)'
+          ]
+        }
+      },
+      {
+        id: 2,
+        name: 'Template Conversation Business',
+        category: 'conversation',
+        level: 'B2',
+        duration: 75,
+        maxStudents: 5,
+        content: {
+          objectives: [
+            'Maîtriser le vocabulaire professionnel',
+            'Pratiquer les situations courantes',
+            'Améliorer la fluidité'
+          ],
+          description: 'Pratique de conversation en contexte professionnel',
+          prerequisites: ['Niveau B1 minimum', 'Vocabulaire business de base'],
+          outline: [
+            'Warm-up et introductions (10 min)',
+            'Présentation du thème (10 min)',
+            'Jeux de rôle (30 min)',
+            'Discussion ouverte (20 min)',
+            'Feedback et corrections (5 min)'
+          ]
+        }
+      }
+    ]
   }
 
   const generateMockTransactions = () => {
@@ -337,9 +793,12 @@ export const useAdminStore = defineStore('admin', () => {
         data = transactions.value
         filename = 'transactions_export.csv'
         break
+      case 'resources':
+        data = resources.value
+        filename = 'resources_export.csv'
+        break
     }
     
-    // Convertir en CSV
     const csv = convertToCSV(data)
     downloadCSV(csv, filename)
   }
@@ -373,6 +832,11 @@ export const useAdminStore = defineStore('admin', () => {
     users,
     sessions,
     transactions,
+    categories,
+    resources,
+    teachers,
+    templates,
+    notifications,
     stats,
     loading,
     filters,
@@ -381,6 +845,7 @@ export const useAdminStore = defineStore('admin', () => {
     activeUsers,
     monthlyStats,
     upcomingSessions,
+    resourcesBySession,
     
     // Actions
     loadAdminData,
@@ -395,10 +860,40 @@ export const useAdminStore = defineStore('admin', () => {
     
     // Gestion des sessions
     createSession,
+    createSessionWithContent,
     updateSession,
+    updateSessionContent,
+    updateSessionMeetingLink,
+    deleteSession,
     cancelSession,
+    duplicateSession,
     getSessionsByTeacher,
+    getSessionsByCategory,
     getSessionsByDate,
+    
+    // Gestion des catégories
+    createCategory,
+    updateCategory,
+    deleteCategory,
+    
+    // Gestion des ressources
+    uploadResource,
+    deleteResource,
+    getResourcesByType,
+    addResourceToSession,
+    removeResourceFromSession,
+    
+    // Gestion des professeurs
+    createTeacher,
+    updateTeacher,
+    getTeacherStats,
+    
+    // Gestion des templates
+    createTemplate,
+    applyTemplate,
+    
+    // Notifications
+    sendNotification,
     
     // Gestion financière
     getRevenueByPeriod,
