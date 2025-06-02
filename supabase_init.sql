@@ -126,7 +126,49 @@ ALTER TABLE evaluations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE evaluation_questions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_evaluations ENABLE ROW LEVEL SECURITY;
 
--- 3. POLITIQUES DE SÉCURITÉ
+-- 3. SUPPRIMER LES POLITIQUES EXISTANTES (pour éviter les conflits)
+-- ========================================
+
+-- Supprimer les politiques existantes pour profiles
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON profiles;
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+
+-- Supprimer les politiques existantes pour course_categories
+DROP POLICY IF EXISTS "Categories are viewable by everyone" ON course_categories;
+DROP POLICY IF EXISTS "Only admin can manage categories" ON course_categories;
+
+-- Supprimer les politiques existantes pour sessions
+DROP POLICY IF EXISTS "Sessions are viewable by everyone" ON sessions;
+DROP POLICY IF EXISTS "Admin and teachers can manage sessions" ON sessions;
+DROP POLICY IF EXISTS "Admin and teachers can insert sessions" ON sessions;
+DROP POLICY IF EXISTS "Admin and teachers can update sessions" ON sessions;
+
+-- Supprimer les politiques existantes pour bookings
+DROP POLICY IF EXISTS "Users can view own bookings" ON bookings;
+DROP POLICY IF EXISTS "Users can create own bookings" ON bookings;
+DROP POLICY IF EXISTS "Users can update own bookings" ON bookings;
+
+-- Supprimer les politiques existantes pour resources
+DROP POLICY IF EXISTS "Resources are viewable by authenticated users" ON resources;
+DROP POLICY IF EXISTS "Admin and teachers can manage resources" ON resources;
+
+-- Supprimer les politiques existantes pour subscriptions
+DROP POLICY IF EXISTS "Users can view own subscriptions" ON subscriptions;
+DROP POLICY IF EXISTS "Only admin can manage subscriptions" ON subscriptions;
+
+-- Supprimer les politiques existantes pour evaluations
+DROP POLICY IF EXISTS "Evaluations are viewable by everyone" ON evaluations;
+DROP POLICY IF EXISTS "Only admin can manage evaluations" ON evaluations;
+
+-- Supprimer les politiques existantes pour evaluation_questions
+DROP POLICY IF EXISTS "Questions viewable by authenticated users" ON evaluation_questions;
+DROP POLICY IF EXISTS "Only admin can manage questions" ON evaluation_questions;
+
+-- Supprimer les politiques existantes pour user_evaluations
+DROP POLICY IF EXISTS "Users can view own evaluation results" ON user_evaluations;
+DROP POLICY IF EXISTS "Users can create own evaluation results" ON user_evaluations;
+
+-- 4. CRÉER LES NOUVELLES POLITIQUES DE SÉCURITÉ
 -- ========================================
 
 -- Policies pour profiles
@@ -158,7 +200,7 @@ CREATE POLICY "Sessions are viewable by everyone"
 ON sessions FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admin and teachers can manage sessions" 
+CREATE POLICY "Admin and teachers can insert sessions" 
 ON sessions FOR INSERT 
 WITH CHECK (
   EXISTS (
@@ -274,7 +316,7 @@ CREATE POLICY "Users can create own evaluation results"
 ON user_evaluations FOR INSERT 
 WITH CHECK (user_id = auth.uid());
 
--- 4. FONCTIONS ET TRIGGERS
+-- 5. FONCTIONS ET TRIGGERS
 -- ========================================
 
 -- Fonction pour mettre à jour updated_at
@@ -287,6 +329,7 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger pour profiles
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON profiles;
 CREATE TRIGGER update_profiles_updated_at 
 BEFORE UPDATE ON profiles
 FOR EACH ROW 
@@ -309,6 +352,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger pour créer le profil automatiquement
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
@@ -368,7 +412,7 @@ EXCEPTION
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 5. DONNÉES DE TEST
+-- 6. DONNÉES DE TEST
 -- ========================================
 
 -- Insérer des catégories
@@ -378,13 +422,6 @@ INSERT INTO course_categories (name, description, icon, color) VALUES
   ('Daily Conversation', 'Conversation quotidienne', '💬', 'purple'),
   ('Grammar Focus', 'Focus grammaire', '📚', 'orange')
 ON CONFLICT DO NOTHING;
-
--- 6. CRÉER UN BUCKET STORAGE POUR LES RESSOURCES
--- ========================================
-
--- À exécuter dans l'interface Supabase Storage ou via API
--- INSERT INTO storage.buckets (id, name, public) 
--- VALUES ('resources', 'resources', true);
 
 -- 7. CRÉER LES INDEX POUR LES PERFORMANCES
 -- ========================================
