@@ -32,14 +32,16 @@
               <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                 ✓ Inscrit
               </span>
-              <div v-if="isUpcoming && session.meetingLink">
-                <button 
-                  @click="joinMeeting"
-                  class="block w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              <div v-if="isUpcoming && session.meetingLink" class="mt-2">
+                <a 
+                  :href="session.meetingLink"
+                  target="_blank"
+                  class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
                 >
-                  <VideoCameraIcon class="w-5 h-5 inline mr-1" />
-                  Rejoindre la session
-                </button>
+                  <VideoCameraIcon class="w-5 h-5 mr-2" />
+                  Rejoindre sur Google Meet
+                </a>
+                <p class="text-xs text-gray-500 mt-1">Le lien sera actif 15 min avant</p>
               </div>
             </div>
             <button 
@@ -96,30 +98,82 @@
             </ol>
           </div>
 
+          <!-- Lien de visioconférence -->
+          <div v-if="isEnrolled && isUpcoming && session.meetingLink" class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div class="flex items-start">
+              <VideoCameraIcon class="w-6 h-6 text-blue-600 mt-1 mr-3" />
+              <div class="flex-1">
+                <h2 class="text-xl font-semibold text-blue-900 mb-2">Rejoindre la session</h2>
+                <p class="text-blue-700 mb-4">La session aura lieu sur Google Meet. Le lien sera actif 15 minutes avant le début.</p>
+                <a 
+                  :href="session.meetingLink"
+                  target="_blank"
+                  class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <VideoCameraIcon class="w-5 h-5 mr-2" />
+                  Accéder à Google Meet
+                </a>
+                <div class="mt-4 text-sm text-blue-600">
+                  <p>💡 Conseils pour la session :</p>
+                  <ul class="list-disc list-inside mt-1 space-y-1">
+                    <li>Testez votre micro et caméra avant</li>
+                    <li>Trouvez un endroit calme</li>
+                    <li>Préparez vos questions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Ressources -->
-          <div v-if="isEnrolled && sessionResources.length > 0" class="bg-white rounded-xl shadow-sm p-6">
-            <h2 class="text-xl font-semibold mb-4">Ressources pédagogiques</h2>
-            <div class="space-y-3">
+          <div v-if="sessionResources.length > 0" class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-semibold mb-4">
+              <DocumentTextIcon class="w-6 h-6 inline mr-2 text-primary-600" />
+              Ressources pédagogiques
+            </h2>
+            <p v-if="!isEnrolled" class="text-gray-600 mb-4">
+              📔 Les ressources seront disponibles après votre inscription
+            </p>
+            <div v-else class="space-y-3">
               <div 
                 v-for="resource in sessionResources" 
                 :key="resource.id"
-                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                class="group flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg hover:from-primary-50 hover:to-primary-100 transition-all cursor-pointer"
+                @click="openResource(resource)"
               >
                 <div class="flex items-center">
-                  <span class="text-2xl mr-3">{{ getResourceIcon(resource.type) }}</span>
-                  <div>
-                    <p class="font-medium">{{ resource.name }}</p>
-                    <p class="text-sm text-gray-600">{{ formatFileSize(resource.size) }}</p>
+                  <div class="w-12 h-12 rounded-lg flex items-center justify-center text-2xl" 
+                       :class="getResourceColorClass(resource.type)">
+                    {{ getResourceIcon(resource.type) }}
+                  </div>
+                  <div class="ml-4">
+                    <p class="font-medium text-gray-900 group-hover:text-primary-700">{{ resource.name }}</p>
+                    <p class="text-sm text-gray-600">
+                      {{ resource.type === 'video' ? 'Regarder' : 'Télécharger' }} • {{ formatFileSize(resource.size) }}
+                    </p>
                   </div>
                 </div>
                 <button 
-                  @click="downloadResource(resource)"
-                  class="px-3 py-1 text-primary-600 hover:text-primary-800"
+                  @click.stop="downloadResource(resource)"
+                  class="p-2 text-gray-400 hover:text-primary-600 transition-colors"
+                  :title="resource.type === 'video' ? 'Regarder la vidéo' : 'Télécharger'"
                 >
-                  <ArrowDownTrayIcon class="w-5 h-5" />
+                  <ArrowDownTrayIcon v-if="resource.type !== 'video'" class="w-5 h-5" />
+                  <PlayCircleIcon v-else class="w-5 h-5" />
                 </button>
               </div>
+              
+              <div v-if="sessionResources.length === 0 && isEnrolled" class="text-center py-8 text-gray-500">
+                <DocumentTextIcon class="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <p>Aucune ressource disponible pour le moment</p>
+              </div>
             </div>
+          </div>
+
+          <!-- Message si pas de ressources mais inscrit -->
+          <div v-else-if="isEnrolled" class="bg-gray-50 rounded-xl p-6 text-center">
+            <DocumentTextIcon class="w-12 h-12 mx-auto mb-2 text-gray-300" />
+            <p class="text-gray-600">Les ressources seront ajoutées prochainement</p>
           </div>
         </div>
 
@@ -213,7 +267,9 @@ import {
   Video as VideoCameraIcon,
   Download as ArrowDownTrayIcon,
   Star as StarIcon,
-  CalendarDays as CalendarDaysIcon
+  CalendarDays as CalendarDaysIcon,
+  FileText as DocumentTextIcon,
+  PlayCircle as PlayCircleIcon
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -293,6 +349,18 @@ const getResourceIcon = (type) => {
   return icons[type] || '📎'
 }
 
+const getResourceColorClass = (type) => {
+  const colors = {
+    'pdf': 'text-blue-500',
+    'video': 'text-red-500',
+    'audio': 'text-green-500',
+    'image': 'text-purple-500',
+    'document': 'text-gray-500',
+    'presentation': 'text-yellow-500'
+  }
+  return colors[type] || 'text-gray-500'
+}
+
 const enrollInSession = async () => {
   if (confirm('Voulez-vous utiliser 1 token pour vous inscrire à cette session ?')) {
     await coursesStore.bookSession(session.value.id)
@@ -354,5 +422,11 @@ END:VCALENDAR`
   a.download = `${session.value.name}.ics`
   a.click()
   window.URL.revokeObjectURL(url)
+}
+
+const openResource = (resource) => {
+  // Implémentation de la fonction openResource
+  console.log('Ouverture de la ressource:', resource.name)
+  alert(`Ouverture de "${resource.name}" en cours...`)
 }
 </script> 

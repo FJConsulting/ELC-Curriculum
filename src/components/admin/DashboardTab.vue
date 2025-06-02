@@ -60,8 +60,34 @@
       <!-- Revenue Chart -->
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-lg font-semibold mb-4">Évolution des revenus</h3>
-        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
-          <p class="text-gray-500">Graphique des revenus (Chart.js à intégrer)</p>
+        <div class="h-64 relative">
+          <!-- Graphique en barres simple -->
+          <div class="absolute inset-0 flex items-end justify-between px-2">
+            <div
+              v-for="(month, index) in revenueData"
+              :key="index"
+              class="flex-1 mx-1 flex flex-col items-center"
+            >
+              <div class="w-full relative mb-2" style="height: 200px">
+                <div
+                  class="absolute bottom-0 w-full bg-gradient-to-t from-primary-600 to-primary-400 rounded-t transition-all duration-500 hover:from-primary-700 hover:to-primary-500"
+                  :style="{ height: (month.value / maxRevenue * 100) + '%' }"
+                  :title="`${month.name}: ${formatCurrency(month.value)}`"
+                ></div>
+              </div>
+              <span class="text-xs text-gray-600">{{ month.shortName }}</span>
+            </div>
+          </div>
+          <!-- Lignes de grille horizontales -->
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+            <div v-for="i in 5" :key="i" class="flex items-center">
+              <span class="text-xs text-gray-400 w-12 text-right pr-2">{{ formatCurrency(maxRevenue * (6 - i) / 5) }}</span>
+              <div class="flex-1 border-t border-gray-200"></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-center text-sm text-gray-600">
+          Revenus des 6 derniers mois
         </div>
       </div>
 
@@ -243,6 +269,18 @@ import { computed } from 'vue'
 import { useAdminStore } from '@/stores/admin'
 
 const adminStore = useAdminStore()
+
+// Données mockées pour le graphique des revenus
+const revenueData = [
+  { name: 'Juillet', shortName: 'Juil', value: 12500 },
+  { name: 'Août', shortName: 'Août', value: 14200 },
+  { name: 'Septembre', shortName: 'Sept', value: 13800 },
+  { name: 'Octobre', shortName: 'Oct', value: 15600 },
+  { name: 'Novembre', shortName: 'Nov', value: 16200 },
+  { name: 'Décembre', shortName: 'Déc', value: 17800 }
+]
+
+const maxRevenue = computed(() => Math.max(...revenueData.map(m => m.value)))
 
 // Methods
 const formatCurrency = (amount) => {

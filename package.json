@@ -20,6 +20,7 @@
   "author": "ELC Academy",
   "license": "MIT",
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.9",
     "axios": "^1.6.2",
     "chart.js": "^4.4.0",
     "lucide-vue-next": "^0.511.0",

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gray-50 pt-16">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -21,7 +21,7 @@
       <!-- Tabs -->
       <div class="bg-white rounded-lg shadow-sm">
         <div class="border-b border-gray-200">
-          <nav class="-mb-px flex space-x-8 px-6">
+          <nav class="-mb-px flex overflow-x-auto px-6">
             <button
               v-for="tab in tabs"
               :key="tab.id"
@@ -30,10 +30,10 @@
                 activeTab === tab.id
                   ? 'border-primary-500 text-primary-600'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center'
+                'whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm flex items-center flex-shrink-0'
               ]"
             >
-              <component :is="tab.icon" class="h-5 w-5 mr-2" />
+              <component :is="tab.icon" class="h-5 w-5 mr-1.5" />
               {{ tab.name }}
             </button>
           </nav>
@@ -61,7 +61,8 @@ import {
   UserCheck as UserCheckIcon,
   DollarSign as CurrencyDollarIcon,
   Settings as CogIcon,
-  RefreshCw as RefreshCwIcon
+  RefreshCw as RefreshCwIcon,
+  ClipboardCheck as ClipboardCheckIcon
 } from 'lucide-vue-next'
 
 // Import des composants des onglets
@@ -73,6 +74,7 @@ import TeachersTab from '@/components/admin/TeachersTab.vue'
 import UsersTab from '@/components/admin/UsersTab.vue'
 import FinanceTab from '@/components/admin/FinanceTab.vue'
 import SettingsTab from '@/components/admin/SettingsTab.vue'
+import EvaluationsTab from '@/components/admin/EvaluationsTab.vue'
 
 const activeTab = ref('dashboard')
 const lastUpdate = ref(new Date().toLocaleString('fr-FR'))
@@ -81,6 +83,7 @@ const tabs = [
   { id: 'dashboard', name: 'Tableau de bord', icon: LayoutDashboardIcon, component: DashboardTab },
   { id: 'content', name: 'Contenus', icon: BookOpenIcon, component: ContentTab },
   { id: 'sessions', name: 'Sessions', icon: CalendarIcon, component: SessionsTab },
+  { id: 'evaluations', name: 'Évaluations', icon: ClipboardCheckIcon, component: EvaluationsTab },
   { id: 'resources', name: 'Ressources', icon: FolderOpenIcon, component: ResourcesTab },
   { id: 'teachers', name: 'Professeurs', icon: UserCheckIcon, component: TeachersTab },
   { id: 'users', name: 'Étudiants', icon: UsersIcon, component: UsersTab },

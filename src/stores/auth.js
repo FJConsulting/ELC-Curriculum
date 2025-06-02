@@ -44,6 +44,8 @@ export const useAuthStore = defineStore('auth', () => {
           C1: { unlocked: false, completed: 0, lessons: 20 }
         },
         bookedCourses: [],
+        completedSessions: [],
+        evaluations: [],
         completedLessons: [],
         preferences: {
           notifications: true,
@@ -80,7 +82,7 @@ export const useAuthStore = defineStore('auth', () => {
         id: Date.now(),
         name: userData.name,
         email: userData.email,
-        level: userData.testResult || 'A1',
+        level: userData.testResult || null,
         tokens: 3, // 3 tokens gratuits à l'inscription
         role: 'student',
         subscription: {
@@ -89,13 +91,15 @@ export const useAuthStore = defineStore('auth', () => {
           expiresAt: null
         },
         progress: {
-          A1: { unlocked: true, completed: 0, lessons: 20 },
+          A1: { unlocked: false, completed: 0, lessons: 20 },
           A2: { unlocked: false, completed: 0, lessons: 20 },
           B1: { unlocked: false, completed: 0, lessons: 20 },
           B2: { unlocked: false, completed: 0, lessons: 20 },
           C1: { unlocked: false, completed: 0, lessons: 20 }
         },
         bookedCourses: [],
+        completedSessions: [],
+        evaluations: [],
         completedLessons: [],
         preferences: {
           notifications: true,
@@ -155,6 +159,9 @@ export const useAuthStore = defineStore('auth', () => {
   const updateLevel = (newLevel) => {
     if (user.value) {
       user.value.level = newLevel
+      if (user.value.progress[newLevel]) {
+        user.value.progress[newLevel].unlocked = true
+      }
       localStorage.setItem('elc_user', JSON.stringify(user.value))
     }
   }
@@ -235,6 +242,24 @@ export const useAuthStore = defineStore('auth', () => {
     return false
   }
 
+  const markSessionCompleted = (sessionId) => {
+    if (user.value && !user.value.completedSessions.includes(sessionId)) {
+      user.value.completedSessions.push(sessionId)
+      localStorage.setItem('elc_user', JSON.stringify(user.value))
+      return true
+    }
+    return false
+  }
+
+  const saveEvaluationResult = (evaluationResult) => {
+    if (user.value) {
+      user.value.evaluations.push(evaluationResult)
+      localStorage.setItem('elc_user', JSON.stringify(user.value))
+      return true
+    }
+    return false
+  }
+
   // Initialiser l'authentification au chargement
   initAuth()
 
@@ -264,6 +289,8 @@ export const useAuthStore = defineStore('auth', () => {
     cancelBooking,
     activateSubscription,
     updateProfile,
-    initAuth
+    initAuth,
+    markSessionCompleted,
+    saveEvaluationResult
   }
 }) 
