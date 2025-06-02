@@ -41,7 +41,7 @@
                 class="flex items-center text-gray-600 hover:text-primary-600 transition-colors font-medium"
               >
                 Formations
-                <ChevronDownIcon class="w-4 h-4 ml-1" />
+                <span class="w-4 h-4 ml-1">⌄</span>
               </button>
               <transition name="fade">
                 <div v-if="showCoursesMenu" class="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 backdrop-blur-lg bg-opacity-95">
@@ -119,7 +119,7 @@
             @click="showNotifications = !showNotifications"
             class="relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
           >
-            <BellIcon class="w-5 h-5" />
+            <span class="text-lg">🔔</span>
             <span v-if="unreadNotifications > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
               {{ unreadNotifications }}
             </span>
@@ -137,7 +137,7 @@
                 </span>
               </div>
               <span class="hidden md:block text-gray-700 font-medium">{{ authStore.user?.name }}</span>
-              <ChevronDownIcon class="w-4 h-4 text-gray-500" />
+              <span class="w-4 h-4 text-gray-500">⌄</span>
             </button>
             
             <transition name="fade">
@@ -160,7 +160,7 @@
                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   @click="showUserMenu = false"
                 >
-                  <HomeIcon class="w-4 h-4 mr-3 text-gray-400" />
+                  <span class="text-lg mr-3">🏠</span>
                   Tableau de bord
                 </router-link>
                 
@@ -169,7 +169,7 @@
                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   @click="showUserMenu = false"
                 >
-                  <UserIcon class="w-4 h-4 mr-3 text-gray-400" />
+                  <span class="text-lg mr-3">👤</span>
                   Mon profil
                 </router-link>
                 
@@ -178,7 +178,7 @@
                   class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
                   @click="showUserMenu = false"
                 >
-                  <CreditCardIcon class="w-4 h-4 mr-3 text-gray-400" />
+                  <span class="text-lg mr-3">💳</span>
                   Abonnement & Tokens
                 </router-link>
                 
@@ -187,7 +187,7 @@
                     @click="handleLogout"
                     class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <LogoutIcon class="w-4 h-4 mr-3" />
+                    <span class="text-lg mr-3">🚪</span>
                     Se déconnecter
                   </button>
                 </div>
@@ -216,8 +216,7 @@
             @click="showMobileMenu = !showMobileMenu"
             class="md:hidden p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-all"
           >
-            <Bars3Icon v-if="!showMobileMenu" class="w-6 h-6" />
-            <XMarkIcon v-else class="w-6 h-6" />
+            <span class="text-lg">{{ showMobileMenu ? '✕' : '☰' }}</span>
           </button>
         </div>
       </div>
@@ -327,16 +326,6 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { 
-  ChevronDownIcon, 
-  BellIcon, 
-  HomeIcon, 
-  UserIcon, 
-  CreditCardIcon,
-  Bars3Icon,
-  XMarkIcon,
-  ArrowRightOnRectangleIcon as LogoutIcon
-} from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -390,6 +379,14 @@ onUnmounted(() => {
 
 .slide-leave-to {
   transform: translateY(-10px);
+  opacity: 0;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
 </style> 

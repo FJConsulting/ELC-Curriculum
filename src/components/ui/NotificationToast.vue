@@ -1,55 +1,48 @@
 <template>
-  <transition name="toast">
-    <div 
-      v-if="visible" 
-      class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden"
-    >
+  <transition
+    enter-active-class="transform ease-out duration-300 transition"
+    enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+    enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
+    leave-active-class="transition ease-in duration-100"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="show" class="fixed top-4 right-4 z-50 max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden">
       <div class="p-4">
         <div class="flex items-start">
           <div class="flex-shrink-0">
-            <CheckCircleIcon v-if="type === 'success'" class="w-6 h-6 text-green-400" />
-            <ExclamationTriangleIcon v-else-if="type === 'warning'" class="w-6 h-6 text-yellow-400" />
-            <XCircleIcon v-else-if="type === 'error'" class="w-6 h-6 text-red-400" />
-            <InformationCircleIcon v-else class="w-6 h-6 text-blue-400" />
+            <span v-if="type === 'success'" class="text-green-500 text-xl">✅</span>
+            <span v-else-if="type === 'error'" class="text-red-500 text-xl">❌</span>
+            <span v-else-if="type === 'warning'" class="text-yellow-500 text-xl">⚠️</span>
+            <span v-else class="text-blue-500 text-xl">ℹ️</span>
           </div>
-          <div class="ml-3 w-0 flex-1">
+          <div class="ml-3 w-0 flex-1 pt-0.5">
             <p class="text-sm font-medium text-gray-900">{{ title }}</p>
             <p v-if="message" class="mt-1 text-sm text-gray-500">{{ message }}</p>
           </div>
           <div class="ml-4 flex-shrink-0 flex">
-            <button 
+            <button
               @click="close"
-              class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              class="bg-white rounded-md inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              <span class="sr-only">Close</span>
-              <XMarkIcon class="w-5 h-5" />
+              <span class="sr-only">Fermer</span>
+              <span class="text-lg">✕</span>
             </button>
           </div>
         </div>
-      </div>
-      <!-- Progress bar -->
-      <div v-if="autoClose" class="h-1 bg-gray-100">
-        <div 
-          :class="progressBarClass"
-          class="h-full transition-all duration-100 ease-linear"
-          :style="{ width: progressWidth + '%' }"
-        ></div>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { 
-  CheckCircleIcon, 
-  ExclamationTriangleIcon, 
-  XCircleIcon, 
-  InformationCircleIcon,
-  XMarkIcon 
-} from '@heroicons/vue/24/outline'
+import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps({
+  show: {
+    type: Boolean,
+    default: false
+  },
   type: {
     type: String,
     default: 'info',
@@ -75,62 +68,27 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-const visible = ref(true)
-const progressWidth = ref(100)
-let progressTimer = null
-let closeTimer = null
-
-const progressBarClass = computed(() => {
-  switch (props.type) {
-    case 'success': return 'bg-green-400'
-    case 'error': return 'bg-red-400'
-    case 'warning': return 'bg-yellow-400'
-    default: return 'bg-blue-400'
-  }
-})
+const show = ref(props.show)
 
 const close = () => {
-  visible.value = false
-  if (progressTimer) clearInterval(progressTimer)
-  if (closeTimer) clearTimeout(closeTimer)
-  setTimeout(() => emit('close'), 300) // Wait for transition
+  show.value = false
+  emit('close')
 }
 
-onMounted(() => {
-  if (props.autoClose) {
-    // Progress bar animation
-    progressTimer = setInterval(() => {
-      progressWidth.value -= (100 / (props.duration / 100))
-      if (progressWidth.value <= 0) {
-        clearInterval(progressTimer)
-      }
-    }, 100)
-
-    // Auto close
-    closeTimer = setTimeout(() => {
+watch(() => props.show, (newValue) => {
+  show.value = newValue
+  if (newValue && props.autoClose) {
+    setTimeout(() => {
       close()
     }, props.duration)
   }
 })
 
-onUnmounted(() => {
-  if (progressTimer) clearInterval(progressTimer)
-  if (closeTimer) clearTimeout(closeTimer)
+onMounted(() => {
+  if (props.show && props.autoClose) {
+    setTimeout(() => {
+      close()
+    }, props.duration)
+  }
 })
-</script>
-
-<style scoped>
-.toast-enter-active, .toast-leave-active {
-  transition: all 0.3s ease;
-}
-
-.toast-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
-}
-
-.toast-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
-}
-</style> 
+</script> 

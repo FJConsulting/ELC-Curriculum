@@ -1,97 +1,97 @@
 <template>
-  <div class="modal-overlay" @click.self="$emit('close')">
-    <div class="modal-content max-w-4xl">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold gradient-text">Test de niveau gratuit</h2>
-        <button @click="$emit('close')" class="text-gray-400 hover:text-gray-600">
-          <XMarkIcon class="w-6 h-6" />
+  <div v-if="show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <!-- Header -->
+      <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-900">Test de niveau d'anglais</h2>
+        <button 
+          @click="$emit('close')"
+          class="text-gray-400 hover:text-gray-600 text-2xl"
+        >
+          ✕
         </button>
       </div>
 
-      <!-- Progress bar -->
-      <div class="mb-8">
-        <div class="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Question {{ currentQuestion + 1 }} sur {{ questions.length }}</span>
-          <span>{{ Math.round(((currentQuestion + 1) / questions.length) * 100) }}%</span>
+      <!-- Test en cours -->
+      <div v-if="!testCompleted" class="p-6">
+        <!-- Progress -->
+        <div class="mb-6">
+          <div class="flex justify-between text-sm text-gray-600 mb-2">
+            <span>Question {{ currentQuestion + 1 }} sur {{ questions.length }}</span>
+            <span>{{ Math.round((currentQuestion + 1) / questions.length * 100) }}%</span>
+          </div>
+          <div class="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              class="bg-gradient-to-r from-primary-500 to-secondary-500 h-2 rounded-full transition-all duration-300"
+              :style="{ width: ((currentQuestion + 1) / questions.length * 100) + '%' }"
+            ></div>
+          </div>
         </div>
-        <div class="progress-bar">
-          <div 
-            class="progress-fill" 
-            :style="{ width: ((currentQuestion + 1) / questions.length) * 100 + '%' }"
-          ></div>
-        </div>
-      </div>
 
-      <!-- Test Content -->
-      <div v-if="!testCompleted">
-        <div class="mb-8">
-          <h3 class="text-xl font-semibold mb-6">{{ questions[currentQuestion].question }}</h3>
+        <!-- Question -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold mb-4">{{ questions[currentQuestion].question }}</h3>
           <div class="space-y-3">
             <button
               v-for="(option, index) in questions[currentQuestion].options"
               :key="index"
-              @click="selectAnswer(option, index)"
-              class="w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 transition-colors focus:outline-none focus:border-primary-500"
-              :class="{ 
-                'border-primary-500 bg-primary-50': selectedAnswer === index,
-                'cursor-not-allowed opacity-50': answerSelected 
-              }"
-              :disabled="answerSelected"
+              @click="selectAnswer(index)"
+              class="w-full text-left p-4 border-2 rounded-lg transition-all hover:border-primary-300 hover:bg-primary-50"
+              :class="selectedAnswer === index ? 'border-primary-500 bg-primary-50' : 'border-gray-200'"
             >
-              <span class="font-medium">{{ String.fromCharCode(65 + index) }})</span>
               {{ option }}
             </button>
           </div>
         </div>
 
+        <!-- Navigation -->
         <div class="flex justify-between">
           <button 
             @click="previousQuestion"
-            v-if="currentQuestion > 0"
-            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            :disabled="currentQuestion === 0"
+            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Précédent
           </button>
-          <div></div>
           <button 
             @click="nextQuestion"
-            v-if="answerSelected"
-            class="btn-primary px-6 py-2"
+            :disabled="selectedAnswer === null"
+            class="px-6 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {{ currentQuestion < questions.length - 1 ? 'Suivant' : 'Terminer' }}
+            {{ currentQuestion === questions.length - 1 ? 'Terminer' : 'Suivant' }}
           </button>
         </div>
       </div>
 
-      <!-- Results -->
-      <div v-else class="text-center">
-        <div class="mb-8">
-          <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckIcon class="w-12 h-12 text-green-600" />
-          </div>
-          <h3 class="text-2xl font-bold mb-4">Test terminé !</h3>
-          <p class="text-lg text-gray-600 mb-6">Votre niveau estimé est :</p>
-          <div class="inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-3xl font-bold px-8 py-4 rounded-xl mb-6">
-            {{ result.level }}
-          </div>
-          <div class="bg-gray-50 rounded-lg p-6 mb-6">
-            <h4 class="font-semibold mb-2">Ce que cela signifie :</h4>
-            <p class="text-gray-600">{{ result.description }}</p>
+      <!-- Résultats -->
+      <div v-else class="p-6 text-center">
+        <div class="mb-6">
+          <div class="text-6xl mb-4">🎉</div>
+          <h3 class="text-2xl font-bold mb-2">Test terminé !</h3>
+          <p class="text-gray-600 mb-4">Votre niveau estimé est :</p>
+          <div class="text-4xl font-bold text-primary-600 mb-6">{{ estimatedLevel }}</div>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <h4 class="font-semibold mb-2">Résultats détaillés</h4>
+          <div class="text-sm text-gray-600">
+            <p>Score : {{ correctAnswers }}/{{ questions.length }} ({{ Math.round(correctAnswers / questions.length * 100) }}%)</p>
+            <p class="mt-1">{{ getLevelDescription(estimatedLevel) }}</p>
           </div>
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <div class="flex justify-center space-x-4">
           <button 
-            @click="handleRegistration"
-            class="btn-primary px-8 py-3 text-lg"
+            @click="restartTest"
+            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
-            S'inscrire maintenant
+            Refaire le test
           </button>
           <button 
-            @click="$emit('close')"
-            class="px-8 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            @click="saveResultsAndClose"
+            class="px-6 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white rounded-lg hover:shadow-lg"
           >
-            Plus tard
+            Enregistrer et continuer
           </button>
         </div>
       </div>
@@ -101,127 +101,119 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { XMarkIcon, CheckIcon } from '@heroicons/vue/24/outline'
 
-const emit = defineEmits(['close', 'completed'])
+const props = defineProps({
+  show: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['close', 'result'])
 
 // État du test
 const currentQuestion = ref(0)
 const selectedAnswer = ref(null)
-const answerSelected = ref(false)
-const answers = ref([])
+const userAnswers = ref([])
 const testCompleted = ref(false)
 
 // Questions du test
 const questions = ref([
   {
-    question: "Choisissez la forme correcte : 'I ___ to the store yesterday.'",
-    options: ["go", "went", "going", "goes"],
+    question: "What _____ your name?",
+    options: ["is", "are", "am", "be"],
+    correct: 0,
+    level: "A1"
+  },
+  {
+    question: "I _____ from France.",
+    options: ["come", "comes", "coming", "came"],
+    correct: 0,
+    level: "A1"
+  },
+  {
+    question: "She _____ to work every day.",
+    options: ["go", "goes", "going", "gone"],
     correct: 1,
-    level: 'A1'
+    level: "A1"
   },
   {
-    question: "Quel est le participe passé de 'write' ?",
-    options: ["wrote", "written", "writing", "writes"],
+    question: "If I _____ rich, I would travel the world.",
+    options: ["was", "were", "am", "is"],
     correct: 1,
-    level: 'A2'
+    level: "B1"
   },
   {
-    question: "Complétez : 'If I ___ you, I would accept the offer.'",
-    options: ["am", "was", "were", "be"],
-    correct: 2,
-    level: 'B1'
-  },
-  {
-    question: "Quel verbe à particule signifie 'annuler' ?",
-    options: ["call on", "call off", "call out", "call up"],
+    question: "The book _____ by millions of people.",
+    options: ["reads", "is read", "reading", "has read"],
     correct: 1,
-    level: 'B2'
-  },
-  {
-    question: "Choisissez la forme correcte : 'By next year, I ___ here for 10 years.'",
-    options: ["will work", "will be working", "will have worked", "work"],
-    correct: 2,
-    level: 'C1'
+    level: "B2"
   }
 ])
 
-// Résultat calculé
-const result = computed(() => {
-  if (!testCompleted.value) return null
-  
-  const correctAnswers = answers.value.filter(answer => answer.correct).length
-  const percentage = (correctAnswers / questions.value.length) * 100
-  
-  let level, description
-  
-  if (percentage >= 80) {
-    level = 'B2'
-    description = 'Excellent ! Vous maîtrisez bien l\'anglais et pouvez communiquer avec aisance dans la plupart des situations.'
-  } else if (percentage >= 60) {
-    level = 'B1'
-    description = 'Bon niveau ! Vous pouvez vous débrouiller dans les situations courantes mais avez besoin de perfectionner certains aspects.'
-  } else if (percentage >= 40) {
-    level = 'A2'
-    description = 'Niveau élémentaire. Vous connaissez les bases mais devez encore travailler les structures grammaticales.'
-  } else {
-    level = 'A1'
-    description = 'Niveau débutant. C\'est parfait pour commencer ! Nos cours vous aideront à construire des bases solides.'
-  }
-  
-  return { level, description, percentage }
+// Computed
+const correctAnswers = computed(() => {
+  return userAnswers.value.filter((answer, index) => 
+    answer === questions.value[index].correct
+  ).length
+})
+
+const estimatedLevel = computed(() => {
+  const score = correctAnswers.value / questions.value.length
+  if (score >= 0.8) return 'B2'
+  if (score >= 0.6) return 'B1'
+  if (score >= 0.4) return 'A2'
+  return 'A1'
 })
 
 // Méthodes
-const selectAnswer = (option, index) => {
-  if (answerSelected.value) return
-  
-  selectedAnswer.value = index
-  answerSelected.value = true
-  
-  answers.value[currentQuestion.value] = {
-    questionIndex: currentQuestion.value,
-    selectedIndex: index,
-    selectedOption: option,
-    correct: index === questions.value[currentQuestion.value].correct
-  }
+const selectAnswer = (answerIndex) => {
+  selectedAnswer.value = answerIndex
 }
 
 const nextQuestion = () => {
-  if (currentQuestion.value < questions.value.length - 1) {
-    currentQuestion.value++
+  if (selectedAnswer.value !== null) {
+    userAnswers.value[currentQuestion.value] = selectedAnswer.value
     selectedAnswer.value = null
-    answerSelected.value = false
-  } else {
-    completeTest()
+    
+    if (currentQuestion.value === questions.value.length - 1) {
+      testCompleted.value = true
+    } else {
+      currentQuestion.value++
+    }
   }
 }
 
 const previousQuestion = () => {
   if (currentQuestion.value > 0) {
     currentQuestion.value--
-    const previousAnswer = answers.value[currentQuestion.value]
-    if (previousAnswer) {
-      selectedAnswer.value = previousAnswer.selectedIndex
-      answerSelected.value = true
-    } else {
-      selectedAnswer.value = null
-      answerSelected.value = false
-    }
+    selectedAnswer.value = userAnswers.value[currentQuestion.value] ?? null
   }
 }
 
-const completeTest = () => {
-  testCompleted.value = true
+const restartTest = () => {
+  currentQuestion.value = 0
+  selectedAnswer.value = null
+  userAnswers.value = []
+  testCompleted.value = false
 }
 
-const handleRegistration = () => {
-  emit('completed', result.value)
+const saveResultsAndClose = () => {
+  emit('result', {
+    level: estimatedLevel.value,
+    score: correctAnswers.value,
+    total: questions.value.length
+  })
+  emit('close')
 }
-</script>
 
-<style scoped>
-.modal-overlay {
-  backdrop-filter: blur(4px);
+const getLevelDescription = (level) => {
+  const descriptions = {
+    'A1': 'Débutant - Vous maîtrisez les bases de l\'anglais',
+    'A2': 'Élémentaire - Vous pouvez communiquer dans des situations simples',
+    'B1': 'Intermédiaire - Vous pouvez vous exprimer sur des sujets familiers',
+    'B2': 'Intermédiaire supérieur - Vous maîtrisez bien l\'anglais'
+  }
+  return descriptions[level] || ''
 }
-</style> 
+</script> 
