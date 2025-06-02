@@ -4,10 +4,21 @@
       <div class="flex justify-between items-center h-16">
         <!-- Logo -->
         <router-link to="/" class="flex items-center space-x-3 group">
-          <div class="w-10 h-10 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-xl flex items-center justify-center transform group-hover:scale-110 transition-transform">
-            <span class="text-white font-bold text-lg">ELC</span>
+          <div class="w-12 h-12 flex items-center justify-center transform group-hover:scale-110 transition-transform">
+            <img 
+              src="/logo-elc.png" 
+              alt="ELC Academy Logo" 
+              class="w-12 h-12 object-contain"
+              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"
+            />
+            <!-- Fallback si l'image n'existe pas -->
+            <div class="w-12 h-12 rounded-full border-2 border-gray-300 flex items-center justify-center elc-circle-logo relative" style="display: none;">
+              <div class="flex items-center justify-center text-lg font-extrabold tracking-tight">
+                <span class="elc-logo-e">E</span><span class="elc-logo-l">L</span><span class="elc-logo-c">C</span>
+              </div>
+            </div>
           </div>
-          <h1 class="text-xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
+          <h1 class="text-xl font-bold text-primary-500">
             ELC Academy
           </h1>
         </router-link>
@@ -124,7 +135,7 @@
                 @click="showUserMenu = !showUserMenu"
                 class="flex items-center space-x-3 text-gray-700 hover:text-gray-900 transition-colors"
               >
-                <div class="w-8 h-8 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white font-medium">
+                <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center text-white font-medium">
                   {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
                 </div>
                 <span class="hidden lg:block font-medium">{{ authStore.user?.name }}</span>

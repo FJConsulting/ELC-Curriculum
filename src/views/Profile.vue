@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex items-center space-x-6">
-          <div class="w-24 h-24 bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full flex items-center justify-center text-white text-3xl font-bold">
+          <div class="w-24 h-24 bg-primary-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
             {{ authStore.user?.name?.charAt(0)?.toUpperCase() || 'U' }}
           </div>
           <div>
