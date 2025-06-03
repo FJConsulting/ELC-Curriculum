@@ -4,9 +4,9 @@
     <div class="flex justify-end">
       <button 
         @click="showTeacherModal()"
-        class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
       >
-        ➕ Ajouter un professeur
+        <span class="text-white text-lg font-bold">+</span> Ajouter un professeur
       </button>
     </div>
 
@@ -76,9 +76,20 @@
     <!-- Teacher Modal -->
     <div v-if="teacherModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div class="bg-white rounded-xl max-w-2xl w-full p-6">
-        <h3 class="text-xl font-semibold mb-4">
-          {{ editingTeacher ? 'Modifier le professeur' : 'Nouveau professeur' }}
-        </h3>
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-xl font-semibold">
+            {{ editingTeacher ? 'Modifier le professeur' : 'Nouveau professeur' }}
+          </h3>
+          <!-- Bouton de suppression (seulement en mode édition) -->
+          <button 
+            v-if="editingTeacher"
+            @click="showDeleteConfirmation = true"
+            class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Supprimer le professeur"
+          >
+            <TrashIcon class="w-5 h-5" />
+          </button>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -196,18 +207,80 @@
         </div>
       </div>
     </div>
+
+    <!-- Modale de confirmation de suppression -->
+    <div v-if="showDeleteConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl max-w-md w-full p-6">
+        <div class="flex items-center mb-4">
+          <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mr-4">
+            <TrashIcon class="w-6 h-6 text-red-600" />
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">Supprimer le professeur</h3>
+            <p class="text-sm text-gray-600">Cette action est irréversible</p>
+          </div>
+        </div>
+        
+        <p class="text-gray-700 mb-6">
+          Êtes-vous sûr de vouloir supprimer <strong>{{ editingTeacher?.name }}</strong> ?
+          Toutes les données associées seront définitivement supprimées.
+        </p>
+        
+        <div class="flex justify-end space-x-3">
+          <button 
+            @click="showDeleteConfirmation = false"
+            class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            Annuler
+          </button>
+          <button 
+            @click="deleteTeacher"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Supprimer
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useAdminStore } from '@/stores/admin'
+import { ref, watch, nextTick } from 'vue'
+import { useAdminStore } from '@/stores/admin-supabase'
+import { Trash as TrashIcon } from 'lucide-vue-next'
+
+// Props
+const props = defineProps({
+  openCreateTeacherModal: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const adminStore = useAdminStore()
+
+// Watcher pour ouvrir la modale automatiquement avec système de renforcement
+watch(() => props.openCreateTeacherModal, async (newValue) => {
+  if (newValue) {
+    await nextTick()
+    // Premier essai
+    showTeacherModal()
+    
+    // Système de renforcement - vérifier si la modale s'est bien ouverte
+    setTimeout(() => {
+      if (!teacherModal.value) {
+        console.log('Renforcement: tentative d\'ouverture de la modale professeur')
+        showTeacherModal()
+      }
+    }, 200)
+  }
+})
 
 // État local
 const teacherModal = ref(false)
 const editingTeacher = ref(null)
+const showDeleteConfirmation = ref(false)  // ← Ajouter cette ligne
 
 const teacherForm = ref({
   name: '',
@@ -245,12 +318,26 @@ const showTeacherModal = (teacher = null) => {
   teacherModal.value = true
 }
 
-const saveTeacher = () => {
+const saveTeacher = async () => {
   if (editingTeacher.value) {
-    adminStore.updateTeacher(editingTeacher.value.id, teacherForm.value)
+    await adminStore.updateTeacher(editingTeacher.value.id, teacherForm.value)
   } else {
-    adminStore.createTeacher(teacherForm.value)
+    await adminStore.addTeacher(teacherForm.value)
   }
+  
   teacherModal.value = false
+  await adminStore.loadTeachers()
 }
-</script> 
+
+// Fonction de suppression
+const deleteTeacher = async () => {
+  if (!editingTeacher.value) return
+  
+  await adminStore.deleteTeacher(editingTeacher.value.id)
+  
+  // Fermer toutes les modales
+  showDeleteConfirmation.value = false
+  teacherModal.value = false
+  editingTeacher.value = null
+}
+</script>

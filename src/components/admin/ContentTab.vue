@@ -340,7 +340,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useAdminStore } from '@/stores/admin'
+import { useAdminStore } from '@/stores/admin-supabase'
 
 const adminStore = useAdminStore()
 

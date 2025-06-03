@@ -6,18 +6,17 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 // Vérifier que les variables sont définies
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn('⚠️ Variables Supabase non configurées. Créez un fichier .env avec VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY')
+  console.error('❌ Variables Supabase non configurées. Créez un fichier .env avec VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY')
+  throw new Error('Variables Supabase non configurées')
 }
 
 // Créer le client Supabase
 export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
+  supabaseUrl,
+  supabaseAnonKey
 )
 
-// Helper pour vérifier si Supabase est configuré
+// Cette fonction peut être supprimée si elle n'est plus utilisée ailleurs
 export const isSupabaseConfigured = () => {
-  return supabaseUrl && supabaseAnonKey && 
-         !supabaseUrl.includes('placeholder') && 
-         !supabaseAnonKey.includes('placeholder')
-} 
+  return true // Toujours retourner true
+}

@@ -32,9 +32,9 @@
         </div>
         <button 
           @click="showSessionModal()"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
         >
-          ➕ Nouvelle session
+          <span class="text-white text-lg font-bold">+</span> Nouvelle session
         </button>
       </div>
     </div>
@@ -88,7 +88,7 @@
               {{ session.teacher }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ formatDate(session.dateTime) }}
+              {{ formatDate(session.date_time || session.dateTime) }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
@@ -529,7 +529,7 @@
               </div>
               <div>
                 <span class="text-gray-600">Date:</span>
-                <span class="ml-2 font-medium">{{ formatDate(detailSession.dateTime) }}</span>
+                <span class="ml-2 font-medium">{{ formatDate(detailSession.date_time) }}</span>
               </div>
             </div>
           </div>
@@ -594,8 +594,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useAdminStore } from '@/stores/admin'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useAdminStore } from '@/stores/admin-supabase'
+
+// Props
+const props = defineProps({
+  openCreateModal: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const adminStore = useAdminStore()
 
@@ -646,7 +654,7 @@ const filteredSessions = computed(() => {
     )
   }
   
-  return sessions.sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime))
+  return sessions.sort((a, b) => new Date(b.date_time) - new Date(a.date_time))
 })
 
 const availableResources = computed(() => {
@@ -659,9 +667,31 @@ const sessionResources = computed(() => {
   return adminStore.resources.filter(r => r.sessionId === editingSession.value.id)
 })
 
+// Watcher pour ouvrir la modale automatiquement avec système de renforcement
+watch(() => props.openCreateModal, async (newValue) => {
+  if (newValue) {
+    await nextTick()
+    // Premier essai
+    showSessionModal()
+    
+    // Système de renforcement - vérifier si la modale s'est bien ouverte
+    setTimeout(() => {
+      if (!sessionModal.value) {
+        console.log('Renforcement: tentative d\'ouverture de la modale session')
+        showSessionModal()
+      }
+    }, 200)
+  }
+})
+
 // Methods
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
+  if (!dateString) return 'Date non définie'
+  
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return 'Date invalide'
+  
+  return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -704,7 +734,7 @@ const getSessionResources = (sessionId) => {
 const showSessionModal = (session = null) => {
   if (session) {
     editingSession.value = session
-    const date = new Date(session.dateTime)
+    const date = new Date(session.date_time)
     sessionForm.value = {
       name: session.name,
       categoryId: session.categoryId,
@@ -862,4 +892,4 @@ const applyTemplate = (templateId) => {
     sessionForm.value.content = { ...template.content }
   }
 }
-</script> 
+</script>

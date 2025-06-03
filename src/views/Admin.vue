@@ -42,7 +42,14 @@
         <!-- Tab Content -->
         <div class="p-6">
           <keep-alive>
-            <component :is="currentTabComponent" />
+            <component 
+              :is="currentTabComponent" 
+              @changeTab="handleTabChange"
+              @createSession="handleCreateSession"
+              @createTeacher="handleCreateTeacher"
+              :openCreateModal="openCreateModal"
+              :openCreateTeacherModal="openCreateTeacherModal"
+            />
           </keep-alive>
         </div>
       </div>
@@ -51,7 +58,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { 
   LayoutDashboard as LayoutDashboardIcon,
   BookOpen as BookOpenIcon,
@@ -64,6 +71,7 @@ import {
   RefreshCw as RefreshCwIcon,
   ClipboardCheck as ClipboardCheckIcon
 } from 'lucide-vue-next'
+import { useAdminStore } from '@/stores/admin-supabase' // Change from '@/stores/admin' to '@/stores/admin-supabase'
 
 // Import des composants des onglets
 import DashboardTab from '@/components/admin/DashboardTab.vue'
@@ -78,6 +86,7 @@ import EvaluationsTab from '@/components/admin/EvaluationsTab.vue'
 
 const activeTab = ref('dashboard')
 const lastUpdate = ref(new Date().toLocaleString('fr-FR'))
+const adminStore = useAdminStore()
 
 const tabs = [
   { id: 'dashboard', name: 'Tableau de bord', icon: LayoutDashboardIcon, component: DashboardTab },
@@ -98,6 +107,33 @@ const currentTabComponent = computed(() => {
 
 const refreshData = () => {
   lastUpdate.value = new Date().toLocaleString('fr-FR')
-  // Ici vous pourriez déclencher un rechargement des données
+  // Charger les données lors de l'actualisation
+  adminStore.loadAllData()
 }
-</script> 
+
+const openCreateModal = ref(false)
+const openCreateTeacherModal = ref(false)
+
+const handleTabChange = (tabId) => {
+  activeTab.value = tabId
+}
+
+const handleCreateSession = () => {
+  openCreateModal.value = true
+  setTimeout(() => {
+    openCreateModal.value = false
+  }, 1500) // Augmenté de 1000ms à 1500ms
+}
+
+const handleCreateTeacher = () => {
+  openCreateTeacherModal.value = true
+  setTimeout(() => {
+    openCreateTeacherModal.value = false
+  }, 1500) // Augmenté de 1000ms à 1500ms
+}
+
+// Charger les données au montage du composant
+onMounted(() => {
+  adminStore.loadAllData()
+})
+</script>

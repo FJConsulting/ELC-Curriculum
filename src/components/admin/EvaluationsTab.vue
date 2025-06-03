@@ -264,7 +264,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useAdminStore } from '@/stores/admin'
+import { useAdminStore } from '@/stores/admin-supabase'
 import { 
   Plus as PlusIcon,
   Pencil as PencilIcon,

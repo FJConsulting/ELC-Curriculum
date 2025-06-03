@@ -117,27 +117,33 @@
       <div class="bg-white rounded-xl shadow-sm p-6">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-semibold">Prochaines sessions</h3>
-          <a href="#" class="text-sm text-primary-600 hover:text-primary-800">Voir tout</a>
+          <button 
+            @click="$emit('changeTab', 'sessions')"
+            class="text-sm text-primary-600 hover:text-primary-800 cursor-pointer"
+          >
+            Voir tout
+          </button>
         </div>
         <div class="space-y-3">
           <div 
             v-for="session in adminStore.upcomingSessions.slice(0, 5)" 
             :key="session.id"
             class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            @click="showSessionDetail(session)"
           >
             <div class="flex items-center">
               <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center mr-3">
                 <span class="text-sm">{{ getCategoryById(session.categoryId)?.icon }}</span>
               </div>
               <div>
-                <p class="font-medium">{{ session.name }}</p>
+                <h4 class="text-sm font-medium">{{ session.title }}</h4>
                 <p class="text-sm text-gray-600">
-                  {{ formatDate(session.dateTime) }} • {{ session.teacher }}
+                  {{ formatDate(session.date_time) }} • {{ session.teacher }}
                 </p>
               </div>
             </div>
             <div class="text-right">
-              <span class="text-sm font-medium">{{ session.enrolled.length }}/{{ session.maxStudents }}</span>
+              <span class="text-sm font-medium">{{ (session.enrolled?.length || 0) }}/{{ session.maxStudents || 0 }}</span>
               <p class="text-xs text-gray-500">inscrits</p>
             </div>
           </div>
@@ -200,11 +206,17 @@
       <div class="bg-white rounded-xl shadow-sm p-6">
         <h3 class="text-lg font-semibold mb-4">Actions rapides</h3>
         <div class="space-y-2">
-          <button class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between">
+          <button 
+            @click="createNewSession"
+            class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between"
+          >
             <span class="text-sm font-medium">Créer une session</span>
             <span>➕</span>
           </button>
-          <button class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between">
+          <button 
+            @click="createNewTeacher"
+            class="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-between"
+          >
             <span class="text-sm font-medium">Ajouter un professeur</span>
             <span>👨‍🏫</span>
           </button>
@@ -243,7 +255,7 @@
         <h3 class="text-lg font-semibold mb-4">Top étudiants du mois</h3>
         <div class="space-y-3">
           <div 
-            v-for="(student, index) in adminStore.getTopStudents(5)" 
+            v-for="(student, index) in (adminStore.getTopStudents ? adminStore.getTopStudents(5) : [])" 
             :key="student.id"
             class="flex items-center justify-between"
           >
@@ -261,14 +273,121 @@
         </div>
       </div>
     </div>
+
+    <!-- Session Detail Modal -->
+    <div v-if="detailModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-xl font-semibold">Détails de la session</h3>
+          <button 
+            @click="detailModal = false"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            ✖️
+          </button>
+        </div>
+        
+        <div v-if="detailSession" class="space-y-6">
+          <!-- Session Info -->
+          <div class="bg-gray-50 rounded-lg p-4">
+            <h4 class="font-medium mb-3">{{ detailSession.title || detailSession.name }}</h4>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-gray-600">Catégorie:</span>
+                <span class="ml-2 font-medium">{{ getCategoryById(detailSession.categoryId)?.name }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Niveau:</span>
+                <span class="ml-2 font-medium">{{ detailSession.level }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Professeur:</span>
+                <span class="ml-2 font-medium">{{ detailSession.teacher }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Date:</span>
+                <span class="ml-2 font-medium">{{ formatDate(detailSession.date_time) }}</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Durée:</span>
+                <span class="ml-2 font-medium">{{ detailSession.duration || 60 }} minutes</span>
+              </div>
+              <div>
+                <span class="text-gray-600">Type:</span>
+                <span class="ml-2 font-medium">{{ getTypeLabel(detailSession.type) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div v-if="detailSession.content">
+            <h4 class="font-medium mb-3">Contenu de la session</h4>
+            <div class="space-y-3">
+              <div v-if="detailSession.content.description">
+                <p class="text-sm font-medium text-gray-700">Description:</p>
+                <p class="text-sm text-gray-600">{{ detailSession.content.description }}</p>
+              </div>
+              
+              <div v-if="detailSession.content.objectives?.length">
+                <p class="text-sm font-medium text-gray-700">Objectifs:</p>
+                <ul class="list-disc list-inside text-sm text-gray-600">
+                  <li v-for="(obj, idx) in detailSession.content.objectives" :key="idx">{{ obj }}</li>
+                </ul>
+              </div>
+              
+              <div v-if="detailSession.content.outline?.length">
+                <p class="text-sm font-medium text-gray-700">Plan:</p>
+                <ol class="list-decimal list-inside text-sm text-gray-600">
+                  <li v-for="(item, idx) in detailSession.content.outline" :key="idx">{{ item }}</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Students -->
+          <div>
+            <h4 class="font-medium mb-3">Étudiants inscrits ({{ (detailSession.enrolled?.length || 0) }}/{{ detailSession.maxStudents || 0 }})</h4>
+            <div v-if="detailSession.enrolled?.length" class="grid grid-cols-2 gap-2">
+              <div 
+                v-for="studentId in detailSession.enrolled" 
+                :key="studentId"
+                class="bg-gray-50 rounded p-2 text-sm"
+              >
+                Étudiant #{{ studentId }}
+              </div>
+            </div>
+            <p v-else class="text-sm text-gray-500">Aucun étudiant inscrit pour le moment</p>
+          </div>
+
+          <!-- Meeting Link -->
+          <div v-if="detailSession.meetingLink">
+            <h4 class="font-medium mb-3">Lien de réunion</h4>
+            <a 
+              :href="detailSession.meetingLink" 
+              target="_blank"
+              class="text-primary-600 hover:text-primary-800 text-sm underline"
+            >
+              {{ detailSession.meetingLink }}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useAdminStore } from '@/stores/admin'
+import { computed, ref } from 'vue'
+import { useAdminStore } from '@/stores/admin-supabase'
+
+// Modifier defineEmits pour inclure le nouvel événement
+const emit = defineEmits(['changeTab', 'createSession', 'createTeacher'])
 
 const adminStore = useAdminStore()
+
+// Modal state
+const detailModal = ref(false)
+const detailSession = ref(null)
 
 // Données mockées pour le graphique des revenus
 const revenueData = [
@@ -291,7 +410,12 @@ const formatCurrency = (amount) => {
 }
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('fr-FR', {
+  if (!dateString) return 'Date non définie'
+  
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return 'Date invalide'
+  
+  return date.toLocaleDateString('fr-FR', {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -312,4 +436,36 @@ const getProgressPercentage = (level) => {
   const levelCount = getStudentsByLevel(level)
   return total > 0 ? Math.round((levelCount / total) * 100) : 0
 }
-</script> 
+
+// Session detail modal
+const showSessionDetail = (session) => {
+  detailSession.value = session
+  detailModal.value = true
+}
+
+const getTypeLabel = (type) => {
+  const labels = {
+    'course': 'Cours',
+    'grammar': 'Grammaire',
+    'conversation': 'Conversation',
+    'workshop': 'Atelier'
+  }
+  return labels[type] || type
+}
+
+const createNewSession = () => {
+  emit('changeTab', 'sessions')
+  // Délai plus long pour laisser le temps à l'onglet de se charger complètement
+  setTimeout(() => {
+    emit('createSession')
+  }, 500) // Augmenté de 300ms à 500ms
+}
+
+const createNewTeacher = () => {
+  emit('changeTab', 'teachers')
+  // Délai plus long pour laisser le temps à l'onglet de se charger complètement
+  setTimeout(() => {
+    emit('createTeacher')
+  }, 500) // Augmenté de 300ms à 500ms
+}
+</script>
