@@ -69,47 +69,51 @@
                 leave-to-class="transform opacity-0 scale-95"
               >
                 <div v-if="showCoursesMenu" class="absolute top-full left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 backdrop-blur-lg bg-opacity-95">
-                  <router-link 
-                    to="/courses" 
-                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-                    @click="showCoursesMenu = false"
-                  >
-                    <span class="text-lg mr-3">📚</span>
-                    <div>
-                      <div class="font-medium">Cours collectifs</div>
-                      <div class="text-xs text-gray-500">Groupes de 5 personnes max</div>
-                    </div>
-                  </router-link>
-                  
-                  <router-link 
-                    to="/grammar-workshops" 
-                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-                    @click="showCoursesMenu = false"
-                  >
-                    <span class="text-lg mr-3">✏️</span>
-                    <div>
-                      <div class="font-medium">Ateliers grammaire</div>
-                      <div class="text-xs text-gray-500">Par niveau (A1→B2+)</div>
-                    </div>
-                  </router-link>
-                  
-                  <router-link 
-                    to="/conversation-club" 
-                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors"
-                    @click="showCoursesMenu = false"
-                  >
-                    <span class="text-lg mr-3">💬</span>
-                    <div>
-                      <div class="font-medium">Club conversation</div>
-                      <div class="text-xs text-gray-500">Actualité & culture</div>
-                    </div>
-                  </router-link>
+                  <template v-if="adminStore.courseTypes && adminStore.courseTypes.length > 0">
+                    <router-link
+                      v-for="courseType in sortedCourseTypes"
+                      :key="courseType.id"
+                      :to="courseType.route || '/courses'"
+                      class="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group"
+                      @click="showCoursesMenu = false"
+                    >
+                      <span class="text-lg mr-3">{{ courseType.icon || '📚' }}</span>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 group-hover:text-primary-600">{{ courseType.name }}</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ courseType.description }}</div>
+                      </div>
+                    </router-link>
+                  </template>
+                  <template v-else>
+                    <!-- Fallback content if no course types are loaded -->
+                    <router-link to="/courses/collectifs" class="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group" @click="showCoursesMenu = false">
+                      <span class="text-lg mr-3">👥</span>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 group-hover:text-primary-600">Cours collectifs</div>
+                        <div class="text-xs text-gray-500 mt-1">Apprenez en groupe dans une ambiance conviviale</div>
+                      </div>
+                    </router-link>
+                    <router-link to="/courses/ateliers" class="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group" @click="showCoursesMenu = false">
+                      <span class="text-lg mr-3">📝</span>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 group-hover:text-primary-600">Ateliers grammaire</div>
+                        <div class="text-xs text-gray-500 mt-1">Perfectionnez vos bases grammaticales</div>
+                      </div>
+                    </router-link>
+                    <router-link to="/courses/conversation" class="flex items-start px-4 py-3 hover:bg-gray-50 transition-colors group" @click="showCoursesMenu = false">
+                      <span class="text-lg mr-3">💬</span>
+                      <div class="flex-1">
+                        <div class="text-sm font-medium text-gray-900 group-hover:text-primary-600">Club conversation</div>
+                        <div class="text-xs text-gray-500 mt-1">Pratiquez l'oral en toute confiance</div>
+                      </div>
+                    </router-link>
+                  </template>
                 </div>
               </transition>
             </div>
 
             <router-link to="/evaluations" class="nav-link">
-              <ClipboardDocumentCheckIcon class="w-4 h-4 mr-1" />
+              <ClipboardListIcon class="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
               Évaluations
             </router-link>
 
@@ -179,7 +183,7 @@
                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     @click="showUserMenu = false"
                   >
-                    <CogIcon class="w-4 h-4 mr-3" />
+                    <SettingsIcon class="w-4 h-4 mr-3" />
                     Administration
                   </router-link>
                   
@@ -189,7 +193,7 @@
                     @click="handleLogout"
                     class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                   >
-                    <ArrowRightOnRectangleIcon class="w-4 h-4 mr-3" />
+                    <LogOutIcon class="w-4 h-4 mr-3" />
                     Déconnexion
                   </button>
                 </div>
@@ -203,7 +207,7 @@
           @click="showMobileMenu = !showMobileMenu"
           class="md:hidden p-2 text-gray-600 hover:text-gray-900"
         >
-          <Bars3Icon v-if="!showMobileMenu" class="w-6 h-6" />
+          <MenuIcon v-if="!showMobileMenu" class="w-6 h-6" />
           <XMarkIcon v-else class="w-6 h-6" />
         </button>
       </div>
@@ -220,24 +224,41 @@
         <div v-if="showMobileMenu" class="md:hidden bg-white border-t border-gray-200">
           <div class="px-2 pt-2 pb-3 space-y-1">
             <template v-if="!authStore.isAuthenticated">
-              <router-link to="/" class="mobile-nav-link">Accueil</router-link>
-              <router-link to="/test-niveau" class="mobile-nav-link">Test de niveau</router-link>
-              <router-link to="/login" class="mobile-nav-link">Connexion</router-link>
-              <router-link to="/register" class="mobile-nav-link bg-primary-600 text-white hover:bg-primary-700">
+              <router-link to="/" class="mobile-nav-link" @click="showMobileMenu = false">Accueil</router-link>
+              <router-link to="/test-niveau" class="mobile-nav-link" @click="showMobileMenu = false">Test de niveau</router-link>
+              <router-link to="/login" class="mobile-nav-link" @click="showMobileMenu = false">Connexion</router-link>
+              <router-link to="/register" class="mobile-nav-link bg-primary-600 text-white hover:bg-primary-700" @click="showMobileMenu = false">
                 S'inscrire
               </router-link>
             </template>
             
             <template v-else>
-              <router-link to="/dashboard" class="mobile-nav-link">Tableau de bord</router-link>
-              <router-link to="/courses" class="mobile-nav-link">Cours collectifs</router-link>
-              <router-link to="/grammar-workshops" class="mobile-nav-link">Ateliers grammaire</router-link>
-              <router-link to="/conversation-club" class="mobile-nav-link">Club conversation</router-link>
-              <router-link to="/evaluations" class="mobile-nav-link">Évaluations</router-link>
-              <router-link to="/subscription" class="mobile-nav-link">Abonnement</router-link>
-              <router-link to="/profile" class="mobile-nav-link">Mon profil</router-link>
-              <router-link v-if="authStore.isAdmin" to="/admin" class="mobile-nav-link">Administration</router-link>
-              <button @click="handleLogout" class="mobile-nav-link text-red-600">Déconnexion</button>
+              <router-link to="/dashboard" class="mobile-nav-link" @click="showMobileMenu = false">Tableau de bord</router-link>
+              
+              <!-- Cours dynamiques pour mobile -->
+              <template v-if="adminStore.courseTypes && adminStore.courseTypes.length > 0">
+                <router-link
+                  v-for="courseType in sortedCourseTypes"
+                  :key="courseType.id"
+                  :to="courseType.route || '/courses'"
+                  class="mobile-nav-link"
+                  @click="showMobileMenu = false"
+                >
+                  {{ courseType.icon || '📚' }} {{ courseType.name }}
+                </router-link>
+              </template>
+              <template v-else>
+                <!-- Fallback pour mobile -->
+                <router-link to="/courses/collectifs" class="mobile-nav-link" @click="showMobileMenu = false">👥 Cours collectifs</router-link>
+                <router-link to="/courses/ateliers" class="mobile-nav-link" @click="showMobileMenu = false">📝 Ateliers grammaire</router-link>
+                <router-link to="/courses/conversation" class="mobile-nav-link" @click="showMobileMenu = false">💬 Club conversation</router-link>
+              </template>
+              
+              <router-link to="/evaluations" class="mobile-nav-link" @click="showMobileMenu = false">Évaluations</router-link>
+              <router-link to="/subscription" class="mobile-nav-link" @click="showMobileMenu = false">Abonnement</router-link>
+              <router-link to="/profile" class="mobile-nav-link" @click="showMobileMenu = false">Mon profil</router-link>
+              <router-link v-if="authStore.isAdmin" to="/admin" class="mobile-nav-link" @click="showMobileMenu = false">Administration</router-link>
+              <button @click="handleLogout" class="mobile-nav-link text-red-600 w-full text-left">Déconnexion</button>
             </template>
           </div>
         </div>
@@ -249,26 +270,26 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth-supabase'
+import { useAdminStore } from '@/stores/admin-supabase'
 import {
   Home as HomeIcon,
-  GraduationCap as GraduationCapIcon,
   User as UserIcon,
+  GraduationCap as GraduationCapIcon,
+  Settings as SettingsIcon,
+  LogOut as LogOutIcon,
+  Bell as BellIcon,
+  Menu as MenuIcon,
+  X as XMarkIcon,
   BookOpen as BookOpenIcon,
   ChevronDown as ChevronDownIcon,
-  ClipboardCheck as ClipboardDocumentCheckIcon,
-  CreditCard as CreditCardIcon,
-  Bell as BellIcon,
-  Settings as CogIcon,
-  LogOut as ArrowRightOnRectangleIcon,
-  Menu as Bars3Icon,
-  X as XMarkIcon,
-  MessageSquare as ChatBubbleLeftRightIcon,
-  Edit as PencilIcon
+  ClipboardList as ClipboardListIcon, // Remplacer ClipboardDocumentCheckIcon
+  CreditCard as CreditCardIcon
 } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const adminStore = useAdminStore()
 
 // États réactifs
 const showUserMenu = ref(false)
@@ -276,6 +297,11 @@ const showCoursesMenu = ref(false)
 const showNotifications = ref(false)
 const showMobileMenu = ref(false)
 const unreadNotifications = ref(3)
+
+// Trier les types de cours par ordre
+const sortedCourseTypes = computed(() => {
+  return [...adminStore.courseTypes].sort((a, b) => (a.order || 999) - (b.order || 999))
+})
 
 // Refs pour la gestion des clics externes
 const userDropdown = ref(null)
@@ -301,6 +327,10 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  // Charger les types de cours au montage
+  if (adminStore.loadCourseTypes) {
+    adminStore.loadCourseTypes()
+  }
 })
 
 onUnmounted(() => {
@@ -328,4 +358,4 @@ onUnmounted(() => {
 .mobile-nav-link.router-link-active {
   @apply bg-primary-50 text-primary-600;
 }
-</style> 
+</style>

@@ -21,16 +21,74 @@ export const useCoursesStore = defineStore('courses', () => {
   })
 
   const sessionsByType = computed(() => {
-    const grouped = {
-      course: [],
-      grammar: [],
-      conversation: []
+    const grouped = {}
+    
+    // Récupérer les types de cours depuis le store admin
+    const adminStore = useAdminStore()
+    
+    // Initialiser les groupes pour chaque type de cours
+    if (adminStore.courseTypes && adminStore.courseTypes.length > 0) {
+      adminStore.courseTypes.forEach(courseType => {
+        const typeKey = courseType.slug || courseType.route?.substring(1) || `type-${courseType.id}`
+        grouped[typeKey] = []
+      })
+    } else {
+      // Fallback pour la rétrocompatibilité - toujours initialiser ces groupes
+      grouped.course = []
+      grouped['grammar-workshops'] = []
+      grouped['conversation-club'] = []
+      grouped.pronunciation = []
     }
     
+    // Ajouter des logs pour le débogage
+    console.log('🔍 Types de cours disponibles:', Object.keys(grouped))
+    console.log('🔍 Sessions disponibles:', availableSessions.value.length)
+    
+    // Grouper les sessions par type
     availableSessions.value.forEach(session => {
-      if (grouped[session.type]) {
-        grouped[session.type].push(session)
+      let typeKey = null
+      
+      // Priorité 1: Utiliser courseTypeId si disponible
+      if (session.courseTypeId || session.course_type_id) {
+        const courseTypeId = session.courseTypeId || session.course_type_id
+        const courseType = adminStore.courseTypes.find(ct => ct.id === courseTypeId)
+        if (courseType) {
+          typeKey = courseType.slug || courseType.route?.substring(1) || `type-${courseType.id}`
+        }
       }
+      
+      // Priorité 2: Utiliser le champ type si courseTypeId n'est pas disponible ou invalide
+      if (!typeKey && session.type) {
+        typeKey = session.type
+      }
+      
+      // Priorité 3: Essayer de déduire le type à partir du nom ou de la description
+      if (!typeKey && (session.name || session.content?.description)) {
+        const text = (session.name + ' ' + (session.content?.description || '')).toLowerCase()
+        if (text.includes('grammaire')) typeKey = 'grammar-workshops'
+        else if (text.includes('conversation')) typeKey = 'conversation-club'
+        else if (text.includes('prononciation')) typeKey = 'pronunciation'
+        else typeKey = 'course' // Par défaut
+      }
+      
+      // Si on a trouvé un type valide, ajouter la session au groupe correspondant
+      if (typeKey && grouped[typeKey]) {
+        grouped[typeKey].push(session)
+      } else {
+        // Fallback: ajouter à "course" si aucun type valide n'est trouvé
+        if (grouped.course) {
+          grouped.course.push(session)
+        } else {
+          // Si même le groupe course n'existe pas, créer un groupe "other"
+          if (!grouped.other) grouped.other = []
+          grouped.other.push(session)
+        }
+      }
+    })
+    
+    // Log pour débogage
+    Object.keys(grouped).forEach(key => {
+      console.log(`🔍 Sessions de type ${key}:`, grouped[key].length)
     })
     
     return grouped
@@ -200,10 +258,82 @@ export const useCoursesStore = defineStore('courses', () => {
 
   // Charger les données initiales
   const loadCoursesData = async () => {
-    // S'assurer que les données admin sont chargées
-    if (adminStore.sessions.length === 0) {
-      await adminStore.loadAdminData()
+    try {
+      console.log('🔄 Début du chargement des données des cours...')
+      
+      // Charger les types de cours en premier
+      if (adminStore.courseTypes.length === 0) {
+        console.log('🔄 Chargement des types de cours...')
+        if (adminStore.loadCourseTypes) {
+          await adminStore.loadCourseTypes()
+        } else {
+          console.warn('⚠️ loadCourseTypes non disponible, utilisation des types par défaut')
+        }
+        console.log('✅ Types de cours chargés:', adminStore.courseTypes.length)
+      }
+      
+      // Ensuite charger toutes les données admin si nécessaire
+      if (adminStore.sessions.length === 0) {
+        console.log('🔄 Chargement des données admin...')
+        await adminStore.loadAllData()
+        console.log('✅ Sessions chargées:', adminStore.sessions.length)
+      }
+      
+      console.log('✅ Données des cours chargées avec succès')
+      return true
+    } catch (error) {
+      console.error('❌ Erreur lors du chargement des données des cours:', error)
+      // Don't throw the error, just log it to prevent blocking the UI
+      return false
     }
+  }
+
+  // Méthode pour filtrer les sessions par type de cours
+  const getSessionsByType = (type) => {
+    // Normaliser le type (enlever le slash initial si présent)
+    let normalizedType = type
+    
+    if (typeof normalizedType === 'string') {
+      normalizedType = normalizedType.startsWith('/') ? normalizedType.substring(1) : normalizedType
+      
+      // Essayer différentes variantes du type
+      const possibleTypes = [
+        normalizedType,
+        normalizedType.replace(/-/g, '_'),
+        normalizedType.replace(/_/g, '-')
+      ]
+      
+      // Chercher le type dans les clés disponibles
+      for (const possibleType of possibleTypes) {
+        if (sessionsByType.value[possibleType]) {
+          return sessionsByType.value[possibleType]
+        }
+      }
+    }
+    
+    // Si le type n'est pas trouvé, essayer de le déduire à partir des types disponibles
+    const availableTypes = Object.keys(sessionsByType.value)
+    console.log('🔍 Type demandé:', type, 'Types disponibles:', availableTypes)
+    
+    // Correspondances connues
+    const typeMap = {
+      'conversation-club': ['conversation', 'club', 'conversation-club'],
+      'grammar-workshops': ['grammar', 'workshops', 'grammar-workshops'],
+      'pronunciation': ['pronunciation', 'prononciation'],
+      'course': ['course', 'courses', 'cours']
+    }
+    
+    // Chercher une correspondance
+    for (const [key, aliases] of Object.entries(typeMap)) {
+      if (aliases.some(alias => normalizedType.includes(alias)) && sessionsByType.value[key]) {
+        console.log(`🔍 Correspondance trouvée: ${normalizedType} -> ${key}`)
+        return sessionsByType.value[key]
+      }
+    }
+    
+    // Fallback: retourner un tableau vide
+    console.warn(`⚠️ Aucune session trouvée pour le type: ${type}`)
+    return []
   }
 
   return {
@@ -225,6 +355,7 @@ export const useCoursesStore = defineStore('courses', () => {
     getSessionById,
     getSessionsByLevel,
     getSessionsByCategory,
+    getSessionsByType,
     searchSessions,
     getUserProgress,
     getTotalProgress,
@@ -234,4 +365,35 @@ export const useCoursesStore = defineStore('courses', () => {
     getRecommendedSessions,
     loadCoursesData
   }
-}) 
+})
+
+
+// Charger les données initiales
+const loadCoursesData = async () => {
+  try {
+    console.log('🔄 Début du chargement des données des cours...')
+    
+    // Charger les types de cours en premier
+    if (adminStore.courseTypes.length === 0) {
+      console.log('🔄 Chargement des types de cours...')
+      if (adminStore.loadCourseTypes) {
+        await adminStore.loadCourseTypes()
+      }
+      console.log('✅ Types de cours chargés:', adminStore.courseTypes.length)
+    }
+    
+    // Ensuite charger toutes les données admin si nécessaire
+    if (adminStore.sessions.length === 0) {
+      console.log('🔄 Chargement des données admin...')
+      await adminStore.loadAllData()
+      console.log('✅ Sessions chargées:', adminStore.sessions.length)
+    }
+    
+    console.log('✅ Données des cours chargées avec succès')
+    return true
+  } catch (error) {
+    console.error('❌ Erreur lors du chargement des données des cours:', error)
+    // Don't throw the error, just log it to prevent blocking the UI
+    return false
+  }
+}

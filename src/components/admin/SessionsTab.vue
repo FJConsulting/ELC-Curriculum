@@ -41,136 +41,131 @@
 
     <!-- Sessions List Enhanced -->
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Session
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Catégorie
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Professeur
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Date & Heure
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Inscrits
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ressources
-            </th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Statut
-            </th>
-            <th class="relative px-6 py-3">
-              <span class="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <tr v-for="session in filteredSessions" :key="session.id" class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div>
-                <div class="text-sm font-medium text-gray-900">{{ session.name }}</div>
-                <div class="text-sm text-gray-500">Niveau {{ session.level }}</div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <span class="mr-2">{{ getCategoryById(session.categoryId)?.icon }}</span>
-                <span class="text-sm text-gray-900">{{ getCategoryById(session.categoryId)?.name }}</span>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ session.teacher }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ formatDate(session.date_time || session.dateTime) }}
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center">
-                <span class="text-sm font-medium">{{ session.enrolled.length }}/{{ session.maxStudents }}</span>
-                <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                  <div 
-                    class="bg-primary-500 h-2 rounded-full"
-                    :style="{ width: (session.enrolled.length / session.maxStudents * 100) + '%' }"
-                  ></div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[200px]">
+                Session
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                Catégorie
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                Professeur
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[140px]">
+                Date & Heure
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                Inscrits
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                Ressources
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                Statut
+              </th>
+              <th class="relative px-6 py-3 min-w-[160px]">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr v-for="session in filteredSessions" :key="session.id" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap min-w-[200px]">
+                <div>
+                  <div class="text-sm font-medium text-gray-900">{{ session.name }}</div>
+                  <div class="text-sm text-gray-500">Niveau {{ session.level }}</div>
                 </div>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <div class="flex items-center space-x-1">
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap min-w-[150px]">
+                <div class="flex items-center">
+                  <span class="mr-2">{{ getCategoryById(session.categoryId)?.icon }}</span>
+                  <span class="text-sm text-gray-900">{{ getCategoryById(session.categoryId)?.name }}</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[120px]">
+                {{ session.teacher }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 min-w-[140px]">
+                {{ formatDate(session.date_time || session.dateTime) }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap min-w-[100px]">
+                <div class="flex items-center">
+                  <span class="text-sm font-medium">{{ session.enrolled.length }}/{{ session.maxStudents }}</span>
+                  <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                    <div 
+                      class="bg-primary-500 h-2 rounded-full"
+                      :style="{ width: (session.enrolled.length / session.maxStudents * 100) + '%' }"
+                    ></div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center space-x-1">
+                  <span 
+                    v-if="getSessionResources(session.id).some(r => r.type === 'video')"
+                    class="text-sm" 
+                    title="Vidéos"
+                  >🎥</span>
+                  <span 
+                    v-if="getSessionResources(session.id).some(r => r.type === 'pdf')"
+                    class="text-sm" 
+                    title="Documents PDF"
+                  >📄</span>
+                  <span 
+                    v-if="getSessionResources(session.id).some(r => r.type === 'audio')"
+                    class="text-sm" 
+                    title="Audio"
+                  >🎵</span>
+                  <span class="text-xs text-gray-500">
+                    ({{ getSessionResources(session.id).length }})
+                  </span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap min-w-[120px]">
                 <span 
-                  v-if="getSessionResources(session.id).some(r => r.type === 'video')"
-                  class="text-sm" 
-                  title="Vidéos"
-                >🎥</span>
-                <span 
-                  v-if="getSessionResources(session.id).some(r => r.type === 'pdf')"
-                  class="text-sm" 
-                  title="Documents PDF"
-                >📄</span>
-                <span 
-                  v-if="getSessionResources(session.id).some(r => r.type === 'audio')"
-                  class="text-sm" 
-                  title="Audio"
-                >🎵</span>
-                <span class="text-xs text-gray-500">
-                  ({{ getSessionResources(session.id).length }})
+                  :class="[
+                    session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                    session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    session.status === 'draft' ? 'bg-gray-100 text-gray-800' :
+                    'bg-red-100 text-red-800',
+                    'px-2 py-1 text-xs rounded-full font-medium'
+                  ]"
+                >
+                  {{ getStatusLabel(session.status) }}
                 </span>
-              </div>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-              <span 
-                :class="[
-                  session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                  session.status === 'completed' ? 'bg-green-100 text-green-800' :
-                  session.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                  'bg-red-100 text-red-800',
-                  'px-2 py-1 text-xs rounded-full font-medium'
-                ]"
-              >
-                {{ getStatusLabel(session.status) }}
-              </span>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-              <div class="flex justify-end space-x-2">
-                <button 
-                  @click="showSessionDetailModal(session)"
-                  class="text-gray-600 hover:text-gray-900"
-                  title="Détails"
-                >
-                  👁️
-                </button>
-                <button 
-                  @click="showSessionModal(session)"
-                  class="text-primary-600 hover:text-primary-900"
-                  title="Modifier"
-                >
-                  ✏️
-                </button>
-                <button 
-                  @click="duplicateSession(session)"
-                  class="text-blue-600 hover:text-blue-900"
-                  title="Dupliquer"
-                >
-                  📋
-                </button>
-                <button 
-                  @click="deleteSession(session)"
-                  class="text-red-600 hover:text-red-900"
-                  title="Supprimer"
-                >
-                  🗑️
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium min-w-[160px]">
+                <div class="flex justify-end space-x-2">
+                  <button 
+                    @click="showSessionDetailModal(session)"
+                    class="text-gray-600 hover:text-gray-900"
+                    title="Détails"
+                  >
+                    👁️
+                  </button>
+                  <button 
+                    @click="showSessionModal(session)"
+                    class="text-primary-600 hover:text-primary-900"
+                    title="Modifier"
+                  >
+                    ✏️
+                  </button>
+                  <button 
+                    @click="deleteSession(session)"
+                    class="text-red-600 hover:text-red-900"
+                    title="Supprimer"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Enhanced Session Modal -->
@@ -591,6 +586,41 @@
       </div>
     </div>
   </div>
+  <!-- Modale de confirmation de suppression -->
+<div v-if="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+    <div class="flex items-center mb-4">
+      <div class="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z"></path>
+        </svg>
+      </div>
+      <div class="ml-4">
+        <h3 class="text-lg font-medium text-gray-900">Confirmer la suppression</h3>
+        <p class="text-sm text-gray-500">Cette action est irréversible.</p>
+      </div>
+    </div>
+    
+    <p class="text-gray-700 mb-6">
+      Êtes-vous sûr de vouloir supprimer la session <strong>"{{ sessionToDelete?.name }}"</strong> ?
+    </p>
+    
+    <div class="flex justify-end space-x-3">
+      <button 
+        @click="cancelDelete"
+        class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+      >
+        Annuler
+      </button>
+      <button 
+        @click="confirmDelete"
+        class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+      >
+        Supprimer
+      </button>
+    </div>
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -782,35 +812,64 @@ const closeSessionModal = () => {
   editingSession.value = null
 }
 
-const saveSession = () => {
+const saveSession = async () => {
   const dateTime = new Date(`${sessionForm.value.date}T${sessionForm.value.time}`)
-  const teacher = adminStore.teachers.find(t => t.id === sessionForm.value.teacherId)
   
+  // Mapper correctement les champs selon la structure de la table sessions
   const sessionData = {
-    ...sessionForm.value,
-    dateTime: dateTime.toISOString(),
-    teacher: teacher?.name || '',
-    meetingLink: sessionForm.value.meetingLink,
-    objectives: sessionForm.value.content.objectives.filter(o => o.trim()),
-    prerequisites: sessionForm.value.content.prerequisites.filter(p => p.trim()),
-    outline: sessionForm.value.content.outline.filter(o => o.trim())
+    name: sessionForm.value.name,
+    description: sessionForm.value.description,
+    category_id: sessionForm.value.categoryId,
+    teacher_id: sessionForm.value.teacherId,
+    type: sessionForm.value.type,
+    level: sessionForm.value.level,
+    date_time: dateTime.toISOString(),
+    duration: sessionForm.value.duration,
+    max_students: sessionForm.value.maxStudents,
+    meeting_link: sessionForm.value.meetingLink,
+    status: sessionForm.value.status || 'scheduled'
   }
   
-  if (editingSession.value) {
-    adminStore.updateSession(editingSession.value.id, sessionData)
-    adminStore.updateSessionContent(editingSession.value.id, sessionData.content)
-    adminStore.updateSessionMeetingLink(editingSession.value.id, sessionData.meetingLink)
-  } else {
-    adminStore.createSessionWithContent(sessionData)
+  try {
+    if (editingSession.value) {
+      // Mettre à jour seulement la session principale
+      await adminStore.updateSession(editingSession.value.id, sessionData)
+    } else {
+      // Pour la création, utiliser createSession simple
+      await adminStore.createSession(sessionData)
+    }
+    
+    closeSessionModal()
+  } catch (error) {
+    console.error('Erreur lors de la sauvegarde:', error)
+    // Optionnel: afficher un message d'erreur à l'utilisateur
   }
-  
-  closeSessionModal()
 }
 
+// Ajouter ces variables réactives
+const showDeleteModal = ref(false)
+const sessionToDelete = ref(null)
+
+// Remplacer la fonction deleteSession existante
 const deleteSession = (session) => {
-  if (confirm(`Êtes-vous sûr de vouloir supprimer la session "${session.name}" ?`)) {
-    adminStore.deleteSession(session.id)
+  sessionToDelete.value = session
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  try {
+    await adminStore.deleteSession(sessionToDelete.value.id)
+    showDeleteModal.value = false
+    sessionToDelete.value = null
+  } catch (error) {
+    console.error('Erreur lors de la suppression:', error)
+    // Optionnel: afficher un message d'erreur à l'utilisateur
   }
+}
+
+const cancelDelete = () => {
+  showDeleteModal.value = false
+  sessionToDelete.value = null
 }
 
 const duplicateSession = (session) => {

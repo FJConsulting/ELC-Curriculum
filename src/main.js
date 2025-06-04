@@ -1,19 +1,39 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import router from './router'
+import router, { updateRoutes } from './router'
 import App from './App.vue'
 import './style.css'
 
 // Test de connexion Supabase en développement
 if (import.meta.env.DEV) {
   import('./scripts/test-supabase.js')
-  // Suppression de la ligne suivante
-  // import('./scripts/setup-hybrid-mode.js')
 }
 
 const app = createApp(App)
+const pinia = createPinia()
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 
+// Initialiser les routes dynamiques après l'initialisation de Pinia
+import { useAdminStore } from './stores/admin-supabase'
+
+// Attendre que l'application soit montée avant de charger les données
 app.mount('#app')
+
+// Charger les types de cours et mettre à jour les routes après le montage
+const adminStore = useAdminStore()
+if (adminStore.loadCourseTypes) {
+  adminStore.loadCourseTypes().then(() => {
+    // Mettre à jour les routes une fois les types de cours chargés
+    updateRoutes()
+    console.log('✅ Routes dynamiques initialisées')
+  }).catch(error => {
+    console.error('❌ Erreur lors du chargement des types de cours:', error)
+    // Mettre à jour les routes même en cas d'erreur pour avoir les routes par défaut
+    updateRoutes()
+  })
+} else {
+  // Si loadCourseTypes n'est pas disponible, utiliser les routes par défaut
+  updateRoutes()
+}
