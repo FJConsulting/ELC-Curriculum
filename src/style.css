@@ -1,0 +1,232 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* Styles personnalisés */
+@layer components {
+  .gradient-text {
+    @apply text-primary-500;
+  }
+  
+  .gradient-bg {
+    @apply bg-primary-500;
+  }
+  
+  .gradient-bg-alt {
+    @apply bg-secondary-500;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  
+  .btn-accent-yellow {
+    @apply bg-accent-yellow-500 hover:bg-accent-yellow-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  
+  .btn-accent-blue {
+    @apply bg-accent-blue-500 hover:bg-accent-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1;
+  }
+  
+  .card-interactive {
+    @apply card cursor-pointer hover:shadow-lg hover:scale-105;
+  }
+  
+  .level-badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary-100 text-primary-800;
+  }
+  
+  .level-badge-yellow {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-accent-yellow-100 text-accent-yellow-800;
+  }
+  
+  .progress-bar {
+    @apply w-full bg-gray-200 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full bg-primary-500 transition-all duration-500 ease-out;
+  }
+  
+  .progress-fill-alt {
+    @apply h-full bg-secondary-500 transition-all duration-500 ease-out;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4;
+  }
+  
+  .modal-content {
+    @apply bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto;
+  }
+  
+  /* Classes pour les nouvelles couleurs ELC */
+  .text-elc-pink {
+    @apply text-primary-500;
+  }
+  
+  .text-elc-green {
+    @apply text-secondary-500;
+  }
+  
+  .text-elc-yellow {
+    @apply text-accent-yellow-500;
+  }
+  
+  .text-elc-blue {
+    @apply text-accent-blue-500;
+  }
+  
+  .bg-elc-pink {
+    @apply bg-primary-500;
+  }
+  
+  .bg-elc-green {
+    @apply bg-secondary-500;
+  }
+  
+  .bg-elc-yellow {
+    @apply bg-accent-yellow-500;
+  }
+  
+  .bg-elc-blue {
+    @apply bg-accent-blue-500;
+  }
+  
+  /* Classes spécifiques pour le logo ELC */
+  .elc-logo-e {
+    color: #ff007f;
+    font-weight: 900;
+    font-size: 1.1em;
+    margin-right: -0.05em;
+  }
+  
+  .elc-logo-l {
+    color: #07fe00;
+    font-weight: 900;
+    font-size: 1.1em;
+    margin: 0 -0.05em;
+  }
+  
+  .elc-logo-c {
+    color: #ffe100;
+    font-weight: 900;
+    font-size: 1.1em;
+    margin-left: -0.05em;
+  }
+  
+  /* Styles ELC Academy sans dégradé */
+  .elc-gradient {
+    @apply bg-primary-500;
+  }
+  
+  .elc-text-gradient {
+    @apply text-primary-500;
+  }
+  
+  /* Nouvelles classes pour logo coloré */
+  .elc-logo-bg {
+    @apply bg-primary-500;
+  }
+  
+  .elc-colorful-text {
+    font-weight: bold;
+  }
+  
+  /* Style pour le logo ELC circulaire */
+  .elc-circle-logo {
+    background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
+    box-shadow: 
+      0 2px 10px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  
+  .elc-circle-logo:hover {
+    box-shadow: 
+      0 4px 20px rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* Animations personnalisées */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-leave-active {
+  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+/* Scrollbar personnalisée avec les couleurs ELC */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ff007f;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e6006f;
+}
+
+/* Loading spinner */
+.spinner {
+  @apply inline-block w-4 h-4 border-2 border-current border-r-transparent rounded-full animate-spin;
+}
+
+/* Responsive styles */
+@media (max-width: 640px) {
+  .modal-content {
+    @apply p-4 mx-2;
+  }
+}
+
+.section-card {
+  @apply bg-white rounded-xl shadow-sm p-6;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+} 
