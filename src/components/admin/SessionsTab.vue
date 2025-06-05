@@ -4,6 +4,17 @@
     <div class="bg-white rounded-xl shadow-sm p-4">
       <div class="flex flex-col md:flex-row justify-between gap-4">
         <div class="flex flex-col sm:flex-row gap-4">
+          <!-- Nouveau filtre pour les types de cours -->
+          <select 
+            v-model="sessionFilter.courseType"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+          >
+            <option value="">Tous les types de cours</option>
+            <option v-for="courseType in adminStore.courseTypes" :key="courseType.id" :value="courseType.name">
+              {{ courseType.icon }} {{ courseType.name }}
+            </option>
+          </select>
+          
           <select 
             v-model="sessionFilter.category"
             class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -649,7 +660,7 @@ const sessionModal = ref(false)
 const detailModal = ref(false)
 const editingSession = ref(null)
 const detailSession = ref(null)
-const sessionFilter = ref({ category: '', status: '', search: '' })
+const sessionFilter = ref({ courseType: '', category: '', status: '', search: '' })
 
 // Forms
 const sessionForm = ref({
@@ -674,6 +685,22 @@ const sessionForm = ref({
 // Computed
 const filteredSessions = computed(() => {
   let sessions = adminStore.sessions
+  
+  // Filtre par type de cours - mapping correct selon la base de données
+  if (sessionFilter.value.courseType) {
+    sessions = sessions.filter(s => {
+      // Mapping basé sur les données réelles de la base
+      const typeMapping = {
+        'Cours collectifs': 'course',           // slug: course
+        'Ateliers grammaire': 'grammar',        // sessions ont type: grammar (pas grammar-workshops)
+        'Club conversation': 'conversation',     // sessions ont type: conversation (pas conversation-club)
+        'Prononciation': 'pronunciation'        // slug: pronunciation
+      }
+      
+      const expectedType = typeMapping[sessionFilter.value.courseType]
+      return s.type === expectedType
+    })
+  }
   
   if (sessionFilter.value.category) {
     sessions = sessions.filter(s => s.categoryId === parseInt(sessionFilter.value.category))
