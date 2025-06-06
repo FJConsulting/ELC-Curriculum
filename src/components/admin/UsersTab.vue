@@ -112,7 +112,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin'
 
 const adminStore = useAdminStore()
 
@@ -156,4 +156,4 @@ const toggleUserStatus = (user) => {
     adminStore.activateUser(user.id)
   }
 }
-</script> 
+</script>

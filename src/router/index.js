@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin/index'
 
 // Pages principales
 import Home from '@/views/Home.vue'

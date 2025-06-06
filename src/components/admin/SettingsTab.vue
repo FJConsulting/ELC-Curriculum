@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin'
 
 const adminStore = useAdminStore()
-</script> 
+</script>

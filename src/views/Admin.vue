@@ -71,7 +71,7 @@ import {
   RefreshCw as RefreshCwIcon,
   ClipboardCheck as ClipboardCheckIcon
 } from 'lucide-vue-next'
-import { useAdminStore } from '@/stores/admin-supabase' // Change from '@/stores/admin' to '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin/index'
 
 // Import des composants des onglets
 import DashboardTab from '@/components/admin/DashboardTab.vue'

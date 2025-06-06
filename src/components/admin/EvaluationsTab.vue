@@ -264,7 +264,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin'
 import { 
   Plus as PlusIcon,
   Pencil as PencilIcon,
@@ -399,4 +399,4 @@ function generateSampleQuestions(count) {
   }
   return questions
 }
-</script> 
+</script>

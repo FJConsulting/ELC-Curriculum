@@ -1,1 +1,1 @@
-export { useAdminStore } from './admin-supabase'
+export { useAdminStore } from './admin/index'

@@ -3,11 +3,26 @@
     <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
       <h2 class="text-2xl font-bold text-center mb-6">Inscription</h2>
       
+      <!-- Afficher les erreurs -->
+      <div v-if="authStore.error" class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+        {{ authStore.error }}
+      </div>
+      
       <form @submit.prevent="handleRegister" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+          <input
+            v-model="firstName"
+            type="text"
+            required
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+        </div>
+        
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
           <input
-            v-model="name"
+            v-model="lastName"
             type="text"
             required
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -25,20 +40,22 @@
         </div>
         
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe (min. 6 caractères)</label>
           <input
             v-model="password"
             type="password"
             required
+            minlength="6"
             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
           >
         </div>
         
         <button
           type="submit"
-          class="w-full py-2 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium"
+          :disabled="authStore.loading"
+          class="w-full py-2 px-4 bg-primary-600 text-white rounded-lg hover:bg-primary-700 font-medium disabled:opacity-50"
         >
-          S'inscrire
+          {{ authStore.loading ? 'Inscription...' : "S'inscrire" }}
         </button>
       </form>
       
@@ -60,20 +77,22 @@ import { useAuthStore } from '@/stores/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const name = ref('')
+const firstName = ref('')
+const lastName = ref('')
 const email = ref('')
 const password = ref('')
 
 const handleRegister = async () => {
-  try {
-    await authStore.register({
-      name: name.value,
-      email: email.value,
-      password: password.value
-    })
+  const result = await authStore.register({
+    firstName: firstName.value,
+    lastName: lastName.value,
+    email: email.value,
+    password: password.value
+  })
+  
+  if (result.success) {
     router.push('/dashboard')
-  } catch (error) {
-    alert('Erreur lors de l\'inscription')
   }
+  // Les erreurs sont déjà gérées dans le store et affichées dans le template
 }
-</script> 
+</script>

@@ -3,20 +3,13 @@ import { createPinia } from 'pinia'
 import router, { updateRoutes } from './router'
 import App from './App.vue'
 import './style.css'
-
-// Test de connexion Supabase en développement
-if (import.meta.env.DEV) {
-  import('./scripts/test-supabase.js')
-}
+import { useAdminStore } from '@/stores/admin/index'
 
 const app = createApp(App)
 const pinia = createPinia()
 
 app.use(pinia)
 app.use(router)
-
-// Initialiser les routes dynamiques après l'initialisation de Pinia
-import { useAdminStore } from './stores/admin-supabase'
 
 // Attendre que l'application soit montée avant de charger les données
 app.mount('#app')

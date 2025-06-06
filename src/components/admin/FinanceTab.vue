@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin'
 
 const adminStore = useAdminStore()
 
@@ -102,4 +102,4 @@ const getTransactionTypeLabel = (type) => {
   }
   return labels[type] || type
 }
-</script> 
+</script>

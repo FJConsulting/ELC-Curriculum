@@ -138,7 +138,7 @@
               <div>
                 <h4 class="text-sm font-medium">{{ session.title }}</h4>
                 <p class="text-sm text-gray-600">
-                  {{ formatDate(session.date_time) }} • {{ session.teacher }}
+                  {{ formatDate(session.dateTime) }} • {{ session.teacher }}
                 </p>
               </div>
             </div>
@@ -281,9 +281,9 @@
           <h3 class="text-xl font-semibold">Détails de la session</h3>
           <button 
             @click="detailModal = false"
-            class="text-gray-500 hover:text-gray-700"
+            class="text-primary-600 hover:text-primary-700 p-1 rounded-lg hover:bg-primary-50 transition-colors"
           >
-            ✖️
+            <XMarkIcon class="w-6 h-6" />
           </button>
         </div>
         
@@ -378,7 +378,7 @@
 
 <script setup>
 import { computed, ref } from 'vue'
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAdminStore } from '@/stores/admin'
 
 // Modifier defineEmits pour inclure le nouvel événement
 const emit = defineEmits(['changeTab', 'createSession', 'createTeacher'])
@@ -469,3 +469,4 @@ const createNewTeacher = () => {
   }, 500) // Augmenté de 300ms à 500ms
 }
 </script>
+import { XMarkIcon } from '@heroicons/vue/24/outline'

@@ -1,6 +1,9 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { supabase } from '../lib/supabase'
+// Remplacer :
+// import { supabase } from '../lib/supabase'
+// Par :
+import { supabase } from '../config/supabase'
 
 export const useAuthStore = defineStore('auth', () => {
   // État
@@ -56,30 +59,28 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     
     try {
+      // Validation des données
+      if (!userData.email || !userData.password || !userData.firstName || !userData.lastName) {
+        throw new Error('Tous les champs sont requis')
+      }
+      
       const { data, error: authError } = await supabase.auth.signUp({
         email: userData.email,
         password: userData.password
       })
       
-      if (authError) throw authError
-      
-      // Créer le profil
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            email: userData.email,
-            first_name: userData.firstName,
-            last_name: userData.lastName,
-            level: 'A1',
-            tokens: 0
-          })
-        
-        if (profileError) throw profileError
+      if (authError) {
+        // Gestion spécifique des erreurs d'authentification
+        if (authError.message.includes('already registered')) {
+          throw new Error('Cette adresse email est déjà utilisée')
+        }
+        throw authError
       }
       
-      return { success: true }
+      // Le profil sera créé automatiquement par le trigger
+      // Ou manuellement si vous préférez garder le contrôle
+      
+      return { success: true, message: 'Inscription réussie ! Vérifiez votre email.' }
     } catch (err) {
       error.value = err.message
       console.error('❌ Erreur inscription:', err)

@@ -270,8 +270,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth-supabase'
-import { useAdminStore } from '@/stores/admin-supabase'
+import { useAuthStore } from '@/stores/auth'
+import { useAdminStore } from '@/stores/admin/index'
 import {
   Home as HomeIcon,
   User as UserIcon,
